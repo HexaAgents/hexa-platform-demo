@@ -1,26 +1,37 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Order } from "@/lib/types";
-import { Package, Hexagon } from "lucide-react";
+import { Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Sidebar({ orders }: { orders: Order[] }) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-72 shrink-0 flex-col border-r bg-card">
-      <div className="flex items-center gap-2.5 border-b px-5 py-4">
-        <Hexagon className="h-7 w-7 text-primary" />
+    <aside className="flex h-screen w-72 shrink-0 flex-col border-r border-sidebar-border bg-sidebar">
+      <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-4">
+        <Image
+          src="/hexa-logo.png"
+          alt="Hexa"
+          width={28}
+          height={28}
+          className="invert"
+        />
         <div>
-          <h1 className="text-lg font-bold tracking-tight">Hexa Platform</h1>
-          <p className="text-xs text-muted-foreground">Order Management</p>
+          <h1 className="text-base font-semibold tracking-tight text-sidebar-foreground">
+            Hexa
+          </h1>
+          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+            Order Management
+          </p>
         </div>
       </div>
 
-      <div className="px-4 pt-4 pb-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      <div className="px-5 pt-5 pb-2">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           Orders
         </p>
       </div>
@@ -33,30 +44,23 @@ export function Sidebar({ orders }: { orders: Order[] }) {
               key={order.id}
               href={`/orders/${order.id}`}
               className={cn(
-                "mb-0.5 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
+                "mb-px flex items-center gap-3 border-l-2 px-4 py-2.5 text-sm transition-colors",
                 isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground hover:bg-muted"
+                  ? "border-foreground bg-accent text-foreground"
+                  : "border-transparent text-muted-foreground hover:bg-accent/50 hover:text-foreground"
               )}
             >
               <Package className="h-4 w-4 shrink-0" />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">{order.orderNumber}</p>
-                <p
-                  className={cn(
-                    "truncate text-xs",
-                    isActive
-                      ? "text-primary-foreground/70"
-                      : "text-muted-foreground"
-                  )}
-                >
+                <p className="truncate text-xs text-muted-foreground">
                   {order.customer.company}
                 </p>
               </div>
               <span
                 className={cn(
                   "h-2 w-2 shrink-0 rounded-full",
-                  order.status === "pending" ? "bg-amber-400" : "bg-emerald-400"
+                  order.status === "pending" ? "bg-amber-400" : "bg-emerald-500"
                 )}
               />
             </Link>

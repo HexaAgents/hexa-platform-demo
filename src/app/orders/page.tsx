@@ -18,15 +18,15 @@ export default function OrdersPage() {
     <div className="p-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight">Orders</h1>
-        <p className="mt-1 text-muted-foreground">
+        <p className="mt-1 text-sm text-muted-foreground">
           Manage incoming distributor orders and review parsed line items.
         </p>
       </div>
 
-      <div className="rounded-xl border bg-card shadow-sm">
+      <div className="border border-border bg-card">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="border-border hover:bg-transparent">
               <TableHead className="w-[140px]">Order</TableHead>
               <TableHead>Customer</TableHead>
               <TableHead>Company</TableHead>
@@ -39,7 +39,7 @@ export default function OrdersPage() {
           </TableHeader>
           <TableBody>
             {orders.map((order) => (
-              <TableRow key={order.id} className="group">
+              <TableRow key={order.id} className="group border-border">
                 <TableCell>
                   <Link
                     href={`/orders/${order.id}`}
@@ -61,13 +61,11 @@ export default function OrdersPage() {
                 </TableCell>
                 <TableCell className="text-center">
                   <Badge
-                    variant={
-                      order.status === "pending" ? "outline" : "secondary"
-                    }
+                    variant="outline"
                     className={
                       order.status === "pending"
-                        ? "border-amber-300 bg-amber-50 text-amber-700"
-                        : "border-emerald-300 bg-emerald-50 text-emerald-700"
+                        ? "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                        : "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
                     }
                   >
                     {order.status === "pending" ? "Pending" : "Fulfilled"}

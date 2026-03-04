@@ -20,7 +20,7 @@ export function LineItemsPanel({ items }: { items: LineItem[] }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+        <h3 className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           Parsed Line Items
         </h3>
         <span className="text-sm text-muted-foreground">
@@ -30,22 +30,22 @@ export function LineItemsPanel({ items }: { items: LineItem[] }) {
 
       <div className="flex flex-wrap gap-2">
         {counts.confirmed > 0 && (
-          <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+          <span className="bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
             {counts.confirmed} confirmed
           </span>
         )}
         {counts.partial > 0 && (
-          <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+          <span className="bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-400">
             {counts.partial} partial
           </span>
         )}
         {counts.conflict > 0 && (
-          <span className="rounded-full bg-orange-50 px-2.5 py-0.5 text-xs font-medium text-orange-700">
+          <span className="bg-orange-500/10 px-2.5 py-0.5 text-xs font-medium text-orange-400">
             {counts.conflict} conflict
           </span>
         )}
         {counts.unmatched > 0 && (
-          <span className="rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700">
+          <span className="bg-red-500/10 px-2.5 py-0.5 text-xs font-medium text-red-400">
             {counts.unmatched} unmatched
           </span>
         )}

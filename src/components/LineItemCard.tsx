@@ -4,10 +4,10 @@ import { AlertCircle, Package, ArrowRight } from "lucide-react";
 
 export function LineItemCard({ item }: { item: LineItem }) {
   return (
-    <div className="rounded-lg border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
+    <div className="border border-border bg-card p-4 transition-colors hover:bg-accent/30">
       <div className="mb-3 flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium">
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center bg-muted text-xs font-medium text-muted-foreground">
             {item.lineNumber}
           </span>
           <h4 className="font-semibold">{item.parsedProductName}</h4>
@@ -15,7 +15,7 @@ export function LineItemCard({ item }: { item: LineItem }) {
         <MatchStatusBadge status={item.matchStatus} />
       </div>
 
-      <div className="mb-3 rounded-md bg-muted/50 px-3 py-2">
+      <div className="mb-3 border border-border bg-muted/50 px-3 py-2">
         <p className="font-mono text-xs text-muted-foreground">
           &quot;{item.rawText}&quot;
         </p>
@@ -24,7 +24,7 @@ export function LineItemCard({ item }: { item: LineItem }) {
       <div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
         <div>
           <span className="text-muted-foreground">SKU:</span>{" "}
-          <span className="font-medium">{item.parsedSku || "---"}</span>
+          <span className="font-medium font-mono">{item.parsedSku || "---"}</span>
         </div>
         <div>
           <span className="text-muted-foreground">Qty:</span>{" "}
@@ -42,7 +42,7 @@ export function LineItemCard({ item }: { item: LineItem }) {
         </div>
         <div>
           <span className="text-muted-foreground">Confidence:</span>{" "}
-          <span className="font-medium">{item.confidence}%</span>
+          <ConfidenceBar value={item.confidence} />
         </div>
       </div>
 
@@ -51,7 +51,7 @@ export function LineItemCard({ item }: { item: LineItem }) {
           {item.matchedCatalogItems.map((cat, i) => (
             <div
               key={i}
-              className="flex items-start gap-2 rounded-md border border-dashed bg-muted/20 px-3 py-2 text-sm"
+              className="flex items-start gap-2 border border-dashed border-border bg-muted/30 px-3 py-2 text-sm"
             >
               <Package className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <div className="min-w-0 flex-1">
@@ -85,5 +85,28 @@ export function LineItemCard({ item }: { item: LineItem }) {
         </div>
       )}
     </div>
+  );
+}
+
+function ConfidenceBar({ value }: { value: number }) {
+  const color =
+    value >= 90
+      ? "bg-emerald-500"
+      : value >= 60
+        ? "bg-amber-500"
+        : value >= 30
+          ? "bg-orange-500"
+          : "bg-red-500";
+
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span className="inline-block h-1.5 w-16 bg-muted">
+        <span
+          className={`block h-full ${color}`}
+          style={{ width: `${value}%` }}
+        />
+      </span>
+      <span className="font-medium text-xs">{value}%</span>
+    </span>
   );
 }

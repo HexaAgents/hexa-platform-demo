@@ -14,7 +14,7 @@ export function AttachmentViewer({
 }) {
   if (attachments.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-lg border border-dashed bg-muted/30">
+      <div className="flex h-64 items-center justify-center border border-dashed border-border bg-muted/20">
         <p className="text-sm text-muted-foreground">No attachments</p>
       </div>
     );
@@ -22,7 +22,7 @@ export function AttachmentViewer({
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+      <h3 className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
         Source Attachments
       </h3>
       {attachments.map((att) => {
@@ -31,31 +31,31 @@ export function AttachmentViewer({
           <div key={att.id} className="space-y-2">
             <div className="flex items-center gap-2 text-sm">
               {isImage ? (
-                <ImageIcon className="h-4 w-4 text-blue-500" />
+                <ImageIcon className="h-4 w-4 text-blue-400" />
               ) : (
-                <FileText className="h-4 w-4 text-red-500" />
+                <FileText className="h-4 w-4 text-red-400" />
               )}
               <span className="font-medium">{att.fileName}</span>
               <span className="text-muted-foreground">
                 ({formatFileSize(att.size)})
               </span>
             </div>
-            <div className="overflow-hidden rounded-lg border bg-muted/20">
+            <div className="overflow-hidden border border-border bg-muted/20">
               {isImage ? (
-                <div className="relative flex min-h-[300px] items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-8">
+                <div className="relative flex min-h-[300px] items-center justify-center bg-gradient-to-br from-muted/50 to-muted/20 p-8">
                   <div className="space-y-4 text-center">
-                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm">
-                      <ImageIcon className="h-8 w-8 text-slate-400" />
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center border border-border bg-card">
+                      <ImageIcon className="h-7 w-7 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-slate-600">
+                      <p className="text-sm font-medium">
                         Handwritten Order Note
                       </p>
-                      <p className="mt-1 text-xs text-slate-400">
+                      <p className="mt-1 text-xs text-muted-foreground">
                         {att.fileName}
                       </p>
                     </div>
-                    <div className="mx-auto max-w-[240px] rounded-lg border border-slate-200 bg-white p-4 text-left font-mono text-xs leading-relaxed text-slate-500 shadow-sm">
+                    <div className="mx-auto max-w-[240px] border border-border bg-card p-4 text-left font-mono text-xs leading-relaxed text-muted-foreground">
                       <p>50x Blue Widget 10pk WDG-BLU-10</p>
                       <p>20 Red Gadgets</p>
                       <p>10 boxes Green Sprockets SPR-100</p>
@@ -66,16 +66,16 @@ export function AttachmentViewer({
                   </div>
                 </div>
               ) : (
-                <div className="relative flex min-h-[300px] items-center justify-center bg-gradient-to-br from-red-50 to-orange-50 p-8">
+                <div className="relative flex min-h-[300px] items-center justify-center bg-gradient-to-br from-red-500/5 to-orange-500/5 p-8">
                   <div className="space-y-4 text-center">
-                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm">
-                      <FileText className="h-8 w-8 text-red-400" />
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center border border-border bg-card">
+                      <FileText className="h-7 w-7 text-red-400" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-slate-600">
+                      <p className="text-sm font-medium">
                         PDF Order Document
                       </p>
-                      <p className="mt-1 text-xs text-slate-400">
+                      <p className="mt-1 text-xs text-muted-foreground">
                         {att.fileName}
                       </p>
                     </div>

@@ -36,11 +36,11 @@ export default async function OrderDetailPage({
               {order.orderNumber}
             </h1>
             <Badge
-              variant={order.status === "pending" ? "outline" : "secondary"}
+              variant="outline"
               className={
                 order.status === "pending"
-                  ? "border-amber-300 bg-amber-50 text-amber-700"
-                  : "border-emerald-300 bg-emerald-50 text-emerald-700"
+                  ? "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                  : "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
               }
             >
               {order.status === "pending" ? "Pending Review" : "Fulfilled"}
@@ -64,8 +64,8 @@ export default async function OrderDetailPage({
         </div>
       </div>
 
-      <div className="mb-8 rounded-xl border bg-card p-6 shadow-sm">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+      <div className="mb-8 border border-border bg-card p-6">
+        <h2 className="mb-4 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           Customer Details
         </h2>
         <CustomerCard customer={order.customer} />
@@ -73,12 +73,12 @@ export default async function OrderDetailPage({
 
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-5">
         <div className="xl:col-span-2">
-          <div className="rounded-xl border bg-card p-6 shadow-sm">
+          <div className="border border-border bg-card p-6">
             <AttachmentViewer attachments={order.attachments} />
           </div>
         </div>
         <div className="xl:col-span-3">
-          <div className="rounded-xl border bg-card p-6 shadow-sm">
+          <div className="border border-border bg-card p-6">
             <LineItemsPanel items={order.lineItems} />
           </div>
         </div>
