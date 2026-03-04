@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Purchase Order - PO-2026-0341</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Courier New', monospace; font-size: 11px; color: #111; padding: 40px; max-width: 800px; margin: 0 auto; line-height: 1.5; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #111; padding-bottom: 16px; margin-bottom: 20px; }
+  .company { font-size: 16px; font-weight: bold; letter-spacing: 1px; }
+  .company-details { font-size: 10px; margin-top: 4px; color: #444; }
+  .po-info { text-align: right; }
+  .po-number { font-size: 14px; font-weight: bold; }
+  .section { margin-bottom: 20px; }
+  .section-title { font-size: 10px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #666; margin-bottom: 6px; border-bottom: 1px solid #ccc; padding-bottom: 2px; }
+  .addresses { display: flex; gap: 40px; }
+  .address-block { flex: 1; }
+  .address-block p { margin: 1px 0; }
+  .address-label { font-weight: bold; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 10px; }
+  th { background: #111; color: #fff; padding: 6px 8px; text-align: left; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
+  td { padding: 6px 8px; border-bottom: 1px solid #ddd; vertical-align: top; }
+  tr:nth-child(even) { background: #f8f8f8; }
+  .text-right { text-align: right; }
+  .text-center { text-align: center; }
+  .notes { font-style: italic; color: #666; font-size: 9px; }
+  .totals { margin-top: 12px; text-align: right; }
+  .totals table { width: 250px; margin-left: auto; }
+  .totals td { border: none; padding: 3px 8px; }
+  .totals .total-row { font-weight: bold; border-top: 2px solid #111; }
+  .footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid #ccc; font-size: 9px; color: #666; }
+  .signature-line { margin-top: 40px; display: flex; gap: 60px; }
+  .sig-block { flex: 1; }
+  .sig-line { border-bottom: 1px solid #111; height: 30px; margin-bottom: 4px; }
+  .handwritten { font-family: 'Comic Sans MS', cursive; color: #1a3a6a; font-size: 11px; }
+
+  @media print { body { padding: 20px; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="company">ACME DISTRIBUTORS INC.</div>
+    <div class="company-details">
+      1200 Commerce Blvd, Suite 400<br>
+      Austin, TX 73301<br>
+      Tel: (555) 234-8901 | Fax: (555) 234-8902<br>
+      orders@acmedist.com
+    </div>
+  </div>
+  <div class="po-info">
+    <div class="po-number">PURCHASE ORDER</div>
+    <div style="margin-top: 4px;">
+      <strong>PO #:</strong> PO-2026-0341<br>
+      <strong>Date:</strong> 04 March 2026<br>
+      <strong>Payment:</strong> Net 30<br>
+      <strong>Ship Via:</strong> Standard Freight
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="addresses">
+    <div class="address-block">
+      <div class="section-title">Ship To</div>
+      <p class="address-label">Acme Distributors Inc.</p>
+      <p>850 Warehouse Dr, Unit 12</p>
+      <p>Austin, TX 73344</p>
+      <p>Attn: James Whitfield</p>
+      <p>Tel: (555) 234-8901</p>
+    </div>
+    <div class="address-block">
+      <div class="section-title">Bill To</div>
+      <p class="address-label">Acme Distributors Inc.</p>
+      <p>1200 Commerce Blvd, Suite 400</p>
+      <p>Austin, TX 73301</p>
+      <p>Accounts Payable Dept.</p>
+    </div>
+    <div class="address-block">
+      <div class="section-title">Vendor</div>
+      <p class="address-label">Hexa Industrial Supply</p>
+      <p>Unit 7, Parkside Trade Centre</p>
+      <p>Sheffield, S9 2RX</p>
+      <p>United Kingdom</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Order Items</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:30px">#</th>
+        <th>Description</th>
+        <th style="width:100px">Part / SKU</th>
+        <th class="text-center" style="width:50px">Qty</th>
+        <th style="width:50px">UOM</th>
+        <th class="text-right" style="width:70px">Unit $</th>
+        <th class="text-right" style="width:80px">Line Total</th>
+        <th style="width:90px">Req. Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>Blue Widget 10-Pack<br><span class="notes">Industrial grade, as per sample received Jan 2026</span></td>
+        <td>WDG-BLU-10</td>
+        <td class="text-center">50</td>
+        <td>cases</td>
+        <td class="text-right">$24.99</td>
+        <td class="text-right">$1,249.50</td>
+        <td>21 Mar 2026</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Red Gadget<br><span class="notes">Standard version - no SKU on file, pls confirm</span></td>
+        <td><span class="handwritten">???</span></td>
+        <td class="text-center">20</td>
+        <td>each</td>
+        <td class="text-right">-</td>
+        <td class="text-right">TBC</td>
+        <td>21 Mar 2026</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Green Sprocket<br><span class="notes">NEED PREMIUM version - NOT standard. Ref SPR-100 in your old catalogue but we want the green coated premium one</span></td>
+        <td>SPR-100 <span class="handwritten">(?)</span></td>
+        <td class="text-center">10</td>
+        <td>boxes</td>
+        <td class="text-right">$45.00</td>
+        <td class="text-right">$450.00</td>
+        <td>21 Mar 2026</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>Flux Capacitor<br><span class="notes">See handwritten note attached - can't read the SKU from supplier sheet</span></td>
+        <td><span class="handwritten">FLX-???</span></td>
+        <td class="text-center">5</td>
+        <td>units</td>
+        <td class="text-right">-</td>
+        <td class="text-right">TBC</td>
+        <td>ASAP</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Copper Fastener 250-Count Bag</td>
+        <td>CF-250</td>
+        <td class="text-center">100</td>
+        <td>bags</td>
+        <td class="text-right">$8.75</td>
+        <td class="text-right">$875.00</td>
+        <td>14 Mar 2026</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>Rubber Seal<br><span class="notes">Heavy duty or standard? Need to check with warehouse. Multiple sizes exist.</span></td>
+        <td>-</td>
+        <td class="text-center">30</td>
+        <td>each</td>
+        <td class="text-right">-</td>
+        <td class="text-right">TBC</td>
+        <td>28 Mar 2026</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="totals">
+  <table>
+    <tr><td>Subtotal (confirmed):</td><td class="text-right">$2,574.50</td></tr>
+    <tr><td>Items pending price:</td><td class="text-right">3 lines TBC</td></tr>
+    <tr><td>Shipping:</td><td class="text-right">TBD</td></tr>
+    <tr class="total-row"><td>Estimated Total:</td><td class="text-right">$2,574.50+</td></tr>
+  </table>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <div class="section-title">Special Instructions</div>
+  <p style="margin-top: 6px;">
+    1. Items marked TBC require price confirmation before shipping.<br>
+    2. Please call James Whitfield at (555) 234-8901 to clarify items #2, #4, and #6.<br>
+    3. Partial shipments accepted - ship confirmed items first.<br>
+    4. All items must include packing slips with PO number referenced.<br>
+    5. <span class="handwritten">NOTE: Attached handwritten list from warehouse team with additional notes on each item.</span>
+  </p>
+</div>
+
+<div class="signature-line">
+  <div class="sig-block">
+    <div class="sig-line"><span class="handwritten" style="position:relative; top:12px;">James Whitfield</span></div>
+    <div>Authorized By: James Whitfield</div>
+    <div style="color:#666; font-size:9px;">Purchasing Manager</div>
+  </div>
+  <div class="sig-block">
+    <div class="sig-line"></div>
+    <div>Date: 04/03/2026</div>
+  </div>
+</div>
+
+<div class="footer">
+  <p><strong>Terms & Conditions:</strong> This purchase order is subject to Acme Distributors Inc. standard terms and conditions of purchase.
+  Delivery acceptance is contingent upon inspection. Net 30 payment terms apply from date of invoice.
+  PO number must appear on all correspondence, shipping labels, packing slips, and invoices.</p>
+  <p style="margin-top: 8px; text-align: center; letter-spacing: 2px;">--- END OF PURCHASE ORDER ---</p>
+</div>
+
+</body>
+</html>

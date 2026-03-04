@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { Paperclip, Send, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 
 declare global {
@@ -25,10 +26,14 @@ declare global {
             getAttachmentContentAsync: (
               id: string,
               callback: (result: {
+                status: string;
                 value: { content: string; format: string };
               }) => void
             ) => void;
           };
+        };
+        ui?: {
+          messageParent: (message: string) => void;
         };
       };
     };
@@ -40,6 +45,7 @@ interface AttachmentInfo {
   name: string;
   size: number;
   contentType: string;
+  content?: string;
 }
 
 type ViewState = "loading" | "ready" | "sending" | "success" | "error";
@@ -50,15 +56,80 @@ function formatFileSize(bytes: number): string {
   return `${bytes} B`;
 }
 
+function readAttachmentContent(
+  item: NonNullable<Window["Office"]>["context"]["mailbox"]["item"],
+  attachmentId: string
+): Promise<string | null> {
+  return new Promise((resolve) => {
+    try {
+      if (typeof item.getAttachmentContentAsync !== "function") {
+        resolve(null);
+        return;
+      }
+      item.getAttachmentContentAsync(attachmentId, (result) => {
+        if (result.status === "succeeded" && result.value?.content) {
+          resolve(result.value.content);
+        } else {
+          resolve(null);
+        }
+      });
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
+function closeDialog() {
+  try {
+    window.Office?.context.ui?.messageParent("done");
+  } catch {
+    // Not in dialog context
+  }
+}
+
 export default function TaskpanePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-[#0a0a0f]">
+        <Loader2 className="h-6 w-6 animate-spin text-[#71717a]" />
+      </div>
+    }>
+      <TaskpaneContent />
+    </Suspense>
+  );
+}
+
+function TaskpaneContent() {
+  const searchParams = useSearchParams();
+  const isDialog = searchParams.get("mode") === "dialog";
+
   const [state, setState] = useState<ViewState>("loading");
   const [senderName, setSenderName] = useState("");
   const [senderEmail, setSenderEmail] = useState("");
   const [subject, setSubject] = useState("");
   const [attachments, setAttachments] = useState<AttachmentInfo[]>([]);
   const [errorMsg, setErrorMsg] = useState("");
+  const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (isDialog) {
+      try {
+        const raw = localStorage.getItem("hexa-email-data");
+        if (raw) {
+          const data = JSON.parse(raw);
+          setSenderName(data.senderName || "");
+          setSenderEmail(data.senderEmail || "");
+          setSubject(data.subject || "");
+          setAttachments(data.attachments || []);
+          localStorage.removeItem("hexa-email-data");
+        }
+      } catch {
+        // Corrupted data -- proceed with empty state
+      }
+      setState("ready");
+      return;
+    }
+
     const script = document.createElement("script");
     script.src =
       "https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js";
@@ -70,13 +141,19 @@ export default function TaskpanePage() {
           setSenderEmail(item.from.emailAddress);
           setSubject(item.subject);
 
-          item.getAttachmentsAsync((result) => {
+          item.getAttachmentsAsync(async (result) => {
             const files = result.value.filter(
               (a) =>
                 a.contentType.startsWith("image/") ||
                 a.contentType === "application/pdf"
             );
-            setAttachments(files);
+
+            const withContent: AttachmentInfo[] = [];
+            for (const file of files) {
+              const content = await readAttachmentContent(item, file.id);
+              withContent.push({ ...file, content: content ?? undefined });
+            }
+            setAttachments(withContent);
             setState("ready");
           });
         } catch {
@@ -88,7 +165,7 @@ export default function TaskpanePage() {
       setState("ready");
     };
     document.head.appendChild(script);
-  }, []);
+  }, [isDialog]);
 
   const handleSend = useCallback(async () => {
     setState("sending");
@@ -114,19 +191,20 @@ export default function TaskpanePage() {
             shippingAddress: "Not provided",
           },
           attachments: attachments.map((a) => ({
-            id: `att-${Date.now()}-${a.id}`,
+            id: `att-${Date.now()}-${a.id.slice(-6)}`,
             fileName: a.name,
             mimeType: a.contentType,
             size: a.size,
-            url: "/sample-handwritten-order.png",
+            url: `/attachment-placeholder`,
+            ...(a.content ? { content: a.content } : {}),
           })),
-          lineItems: [],
         }),
       });
 
       if (!res.ok) throw new Error("Failed to create order");
 
-      await res.json();
+      const order = await res.json();
+      setCreatedOrderId(order.id);
       setState("success");
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : "Something went wrong");
@@ -136,48 +214,49 @@ export default function TaskpanePage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#0a0a0f] text-[#fafafa]">
-      <div className="border-b border-[#1e1e2a] bg-[#0c0c12] px-5 py-4">
-        <div className="flex items-center gap-3">
+      <div className="border-b border-[#1e1e2a] bg-[#0c0c12] px-4 py-3">
+        <div className="flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/hexa-logo.png"
             alt="Hexa"
-            width={24}
-            height={24}
+            width={20}
+            height={20}
             className="invert"
           />
-          <span className="text-base font-semibold tracking-tight">
+          <span className="text-sm font-semibold tracking-tight">
             Hexa
           </span>
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
+      <div className="flex flex-1 flex-col p-4">
         {state === "loading" && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3">
-            <Loader2 className="h-8 w-8 animate-spin text-[#71717a]" />
-            <p className="text-sm text-[#71717a]">Connecting to Outlook...</p>
+            <Loader2 className="h-6 w-6 animate-spin text-[#71717a]" />
+            <p className="text-sm text-[#71717a]">
+              {isDialog ? "Loading..." : "Connecting to Outlook..."}
+            </p>
           </div>
         )}
 
         {state === "ready" && (
-          <div className="space-y-5">
+          <div className="space-y-4">
             <div>
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-base font-semibold">
                 Send to Hexa?
               </h2>
-              <p className="mt-1 text-sm text-[#71717a]">
-                Create a new order from email attachments and send for
-                processing.
+              <p className="mt-0.5 text-xs text-[#71717a]">
+                Create a new order from email attachments.
               </p>
             </div>
 
             {(senderName || senderEmail) && (
-              <div className="border border-[#1e1e2a] bg-[#131318] p-3">
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-[#71717a]">
+              <div className="border border-[#1e1e2a] bg-[#131318] p-2.5">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#71717a]">
                   From
                 </p>
-                <p className="mt-1 text-sm font-medium">
+                <p className="mt-0.5 text-sm font-medium">
                   {senderName || senderEmail}
                 </p>
                 {senderName && senderEmail && (
@@ -185,32 +264,32 @@ export default function TaskpanePage() {
                 )}
                 {subject && (
                   <>
-                    <p className="mt-3 text-[11px] font-semibold uppercase tracking-widest text-[#71717a]">
+                    <p className="mt-2 text-[10px] font-semibold uppercase tracking-widest text-[#71717a]">
                       Subject
                     </p>
-                    <p className="mt-0.5 text-sm text-[#a1a1aa]">{subject}</p>
+                    <p className="mt-0.5 text-xs text-[#a1a1aa]">{subject}</p>
                   </>
                 )}
               </div>
             )}
 
             <div>
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-[#71717a]">
-                Detected Attachments
+              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#71717a]">
+                Attachments
               </p>
               {attachments.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {attachments.map((att) => (
                     <div
                       key={att.id}
-                      className="flex items-center gap-2.5 border border-[#1e1e2a] bg-[#131318] p-3"
+                      className="flex items-center gap-2 border border-[#1e1e2a] bg-[#131318] p-2.5"
                     >
-                      <Paperclip className="h-4 w-4 shrink-0 text-blue-400" />
+                      <Paperclip className="h-3.5 w-3.5 shrink-0 text-blue-400" />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">
+                        <p className="truncate text-xs font-medium">
                           {att.name}
                         </p>
-                        <p className="text-xs text-[#71717a]">
+                        <p className="text-[11px] text-[#71717a]">
                           {formatFileSize(att.size)}
                         </p>
                       </div>
@@ -218,19 +297,17 @@ export default function TaskpanePage() {
                   ))}
                 </div>
               ) : (
-                <p className="border border-dashed border-[#1e1e2a] p-4 text-center text-sm text-[#71717a]">
+                <p className="border border-dashed border-[#1e1e2a] p-3 text-center text-xs text-[#71717a]">
                   No PDF or image attachments detected.
-                  <br />
-                  Open an email with attachments to send.
                 </p>
               )}
             </div>
 
             <button
               onClick={handleSend}
-              className="flex w-full items-center justify-center gap-2 bg-[#fafafa] px-4 py-3 text-sm font-medium text-[#0a0a0f] transition-colors hover:bg-[#e4e4e7] active:bg-[#d4d4d8]"
+              className="flex w-full items-center justify-center gap-2 bg-[#fafafa] px-4 py-2.5 text-sm font-medium text-[#0a0a0f] transition-colors hover:bg-[#e4e4e7] active:bg-[#d4d4d8]"
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-3.5 w-3.5" />
               Send to Hexa
             </button>
           </div>
@@ -238,49 +315,63 @@ export default function TaskpanePage() {
 
         {state === "sending" && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3">
-            <Loader2 className="h-8 w-8 animate-spin text-[#71717a]" />
+            <Loader2 className="h-6 w-6 animate-spin text-[#71717a]" />
             <p className="text-sm text-[#71717a]">Creating order...</p>
           </div>
         )}
 
         {state === "success" && (
-          <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-            <div className="flex h-14 w-14 items-center justify-center bg-emerald-500/10">
-              <CheckCircle2 className="h-7 w-7 text-emerald-400" />
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+            <div className="flex h-11 w-11 items-center justify-center bg-emerald-500/10">
+              <CheckCircle2 className="h-5 w-5 text-emerald-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold">
+              <h3 className="text-base font-semibold">
                 Order Created
               </h3>
-              <p className="mt-1 text-sm text-[#71717a]">
-                The order has been sent to the Hexa Platform for processing.
+              <p className="mt-0.5 text-xs text-[#71717a]">
+                Sent to the Hexa Platform for processing.
               </p>
             </div>
-            <a
-              href={`${window.location.origin}/orders`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 border border-[#1e1e2a] bg-[#131318] px-4 py-2 text-sm font-medium transition-colors hover:bg-[#1c1c24]"
-            >
-              View in Platform
-            </a>
+            <div className="flex items-center gap-2">
+              <a
+                href={
+                  createdOrderId
+                    ? `${window.location.origin}/orders/${createdOrderId}`
+                    : `${window.location.origin}/orders`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 border border-[#1e1e2a] bg-[#131318] px-3 py-1.5 text-xs font-medium transition-colors hover:bg-[#1c1c24]"
+              >
+                View in Platform
+              </a>
+              {isDialog && (
+                <button
+                  onClick={closeDialog}
+                  className="inline-flex items-center gap-1.5 border border-[#1e1e2a] bg-[#131318] px-3 py-1.5 text-xs font-medium text-[#71717a] transition-colors hover:bg-[#1c1c24]"
+                >
+                  Close
+                </button>
+              )}
+            </div>
           </div>
         )}
 
         {state === "error" && (
-          <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-            <div className="flex h-14 w-14 items-center justify-center bg-red-500/10">
-              <AlertCircle className="h-7 w-7 text-red-400" />
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+            <div className="flex h-11 w-11 items-center justify-center bg-red-500/10">
+              <AlertCircle className="h-5 w-5 text-red-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold">
+              <h3 className="text-base font-semibold">
                 Something went wrong
               </h3>
-              <p className="mt-1 text-sm text-[#71717a]">{errorMsg}</p>
+              <p className="mt-0.5 text-xs text-[#71717a]">{errorMsg}</p>
             </div>
             <button
               onClick={() => setState("ready")}
-              className="inline-flex items-center gap-1.5 border border-[#1e1e2a] bg-[#131318] px-4 py-2 text-sm font-medium transition-colors hover:bg-[#1c1c24]"
+              className="inline-flex items-center gap-1.5 border border-[#1e1e2a] bg-[#131318] px-3 py-1.5 text-xs font-medium transition-colors hover:bg-[#1c1c24]"
             >
               Try Again
             </button>

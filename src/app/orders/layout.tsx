@@ -1,12 +1,14 @@
 import { getAllOrders } from "@/lib/store";
 import { Sidebar } from "@/components/Sidebar";
 
-export default function OrdersLayout({
+export const dynamic = "force-dynamic";
+
+export default async function OrdersLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const orders = getAllOrders();
+  const orders = await getAllOrders();
 
   return (
     <div className="flex h-screen overflow-hidden">

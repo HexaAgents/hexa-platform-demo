@@ -7,13 +7,15 @@ import { AttachmentViewer } from "@/components/AttachmentViewer";
 import { LineItemsPanel } from "@/components/LineItemsPanel";
 import { ArrowLeft, Calendar, Mail } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function OrderDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const order = getOrderById(id);
+  const order = await getOrderById(id);
 
   if (!order) {
     notFound();

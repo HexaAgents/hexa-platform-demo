@@ -11,8 +11,10 @@ import {
 } from "@/components/ui/table";
 import { Package, ArrowRight } from "lucide-react";
 
-export default function OrdersPage() {
-  const orders = getAllOrders();
+export const dynamic = "force-dynamic";
+
+export default async function OrdersPage() {
+  const orders = await getAllOrders();
 
   return (
     <div className="p-8">

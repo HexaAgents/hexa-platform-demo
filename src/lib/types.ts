@@ -30,6 +30,7 @@ export interface Attachment {
   mimeType: string;
   size: number;
   url: string;
+  content?: string;
 }
 
 export interface Customer {
