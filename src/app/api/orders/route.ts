@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAllOrders, addOrder } from "@/lib/store";
+import { getAllOrders, addOrder, deleteOrders } from "@/lib/store";
 import { Order } from "@/lib/types";
 import { generateDefaultLineItems } from "@/lib/default-line-items";
 
@@ -41,4 +41,13 @@ export async function POST(request: Request) {
 
   const created = await addOrder(order);
   return NextResponse.json(created, { status: 201 });
+}
+
+export async function DELETE(request: Request) {
+  const { ids } = await request.json();
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return NextResponse.json({ error: "ids[] required" }, { status: 400 });
+  }
+  await deleteOrders(ids);
+  return NextResponse.json({ deleted: ids.length });
 }

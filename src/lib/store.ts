@@ -68,6 +68,17 @@ async function kvAdd(redis: Redis, order: Order): Promise<Order> {
   return order;
 }
 
+async function kvDelete(redis: Redis, idsToDelete: string[]): Promise<void> {
+  await kvSeed(redis);
+  const allIds: string[] = (await redis.get(ORDERS_KEY)) ?? [];
+  const remaining = allIds.filter((id) => !idsToDelete.includes(id));
+
+  const pipe = redis.pipeline();
+  for (const id of idsToDelete) pipe.del(`${ORDER_PREFIX}${id}`);
+  pipe.set(ORDERS_KEY, JSON.stringify(remaining));
+  await pipe.exec();
+}
+
 // --- In-memory fallback (local dev) ---
 
 const mem: Order[] = [...mockOrders];
@@ -94,4 +105,13 @@ export async function addOrder(order: Order): Promise<Order> {
   if (r) return kvAdd(r, order);
   mem.unshift(order);
   return order;
+}
+
+export async function deleteOrders(ids: string[]): Promise<void> {
+  const r = getRedis();
+  if (r) return kvDelete(r, ids);
+  const toDelete = new Set(ids);
+  for (let i = mem.length - 1; i >= 0; i--) {
+    if (toDelete.has(mem[i].id)) mem.splice(i, 1);
+  }
 }
