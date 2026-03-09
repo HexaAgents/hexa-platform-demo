@@ -86,8 +86,8 @@ export default function TaskpanePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[#0a0a0f]">
-          <Loader2 className="h-6 w-6 animate-spin text-[#71717a]" />
+        <div className="flex min-h-screen items-center justify-center bg-background">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       }
     >
@@ -189,8 +189,8 @@ function TaskpaneContent() {
   }, [senderName, senderEmail, subject, attachments]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#0a0a0f] text-[#fafafa]">
-      <div className="border-b border-[#1e1e2a] bg-[#0c0c12] px-4 py-3">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <div className="border-b border-border bg-card px-4 py-3">
         <div className="flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -198,53 +198,62 @@ function TaskpaneContent() {
             alt="Hexa"
             width={20}
             height={20}
-            className="invert"
           />
-          <span className="text-sm font-semibold tracking-tight">Hexa</span>
+          <span className="font-display text-sm font-medium tracking-tight text-foreground">
+            Hexa
+          </span>
         </div>
       </div>
 
       <div className="flex flex-1 flex-col p-4">
         {state === "loading" && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3">
-            <Loader2 className="h-6 w-6 animate-spin text-[#71717a]" />
-            <p className="text-sm text-[#71717a]">Connecting to Outlook...</p>
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <p className="text-[13px] text-muted-foreground">
+              Connecting to Outlook...
+            </p>
           </div>
         )}
 
         {state === "ready" && (
           <div className="space-y-4">
             <div>
-              <h2 className="text-base font-semibold">Parse & add to Hexa?</h2>
-              <p className="mt-0.5 text-xs text-[#71717a]">
+              <h2 className="font-display text-base font-medium text-foreground">
+                Parse & add to Hexa?
+              </h2>
+              <p className="mt-0.5 text-[12px] text-muted-foreground">
                 Create a new order from this email&apos;s attachments.
               </p>
             </div>
 
             {(senderName || senderEmail) && (
-              <div className="border border-[#1e1e2a] bg-[#131318] p-2.5">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#71717a]">
+              <div className="border border-border bg-card p-3">
+                <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                   From
                 </p>
-                <p className="mt-0.5 text-sm font-medium">
+                <p className="mt-0.5 text-[13px] font-medium text-foreground">
                   {senderName || senderEmail}
                 </p>
                 {senderName && senderEmail && (
-                  <p className="text-xs text-[#71717a]">{senderEmail}</p>
+                  <p className="text-[12px] text-muted-foreground">
+                    {senderEmail}
+                  </p>
                 )}
                 {subject && (
                   <>
-                    <p className="mt-2 text-[10px] font-semibold uppercase tracking-widest text-[#71717a]">
+                    <p className="mt-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                       Subject
                     </p>
-                    <p className="mt-0.5 text-xs text-[#a1a1aa]">{subject}</p>
+                    <p className="mt-0.5 text-[12px] text-foreground/70">
+                      {subject}
+                    </p>
                   </>
                 )}
               </div>
             )}
 
             <div>
-              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#71717a]">
+              <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 Attachments
               </p>
               {attachments.length > 0 ? (
@@ -252,14 +261,14 @@ function TaskpaneContent() {
                   {attachments.map((att) => (
                     <div
                       key={att.id}
-                      className="flex items-center gap-2 border border-[#1e1e2a] bg-[#131318] p-2.5"
+                      className="flex items-center gap-2 border border-border bg-card p-2.5"
                     >
-                      <Paperclip className="h-3.5 w-3.5 shrink-0 text-blue-400" />
+                      <Paperclip className="h-3.5 w-3.5 shrink-0 text-primary" />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-medium">
+                        <p className="truncate text-[12px] font-medium text-foreground">
                           {att.name}
                         </p>
-                        <p className="text-[11px] text-[#71717a]">
+                        <p className="text-[11px] text-muted-foreground">
                           {formatFileSize(att.size)}
                         </p>
                       </div>
@@ -267,7 +276,7 @@ function TaskpaneContent() {
                   ))}
                 </div>
               ) : (
-                <p className="border border-dashed border-[#1e1e2a] p-3 text-center text-xs text-[#71717a]">
+                <p className="border border-dashed border-border p-3 text-center text-[12px] text-muted-foreground">
                   No PDF or image attachments detected.
                 </p>
               )}
@@ -275,7 +284,7 @@ function TaskpaneContent() {
 
             <button
               onClick={handleSend}
-              className="flex w-full items-center justify-center gap-2 bg-[#fafafa] px-4 py-2.5 text-sm font-medium text-[#0a0a0f] transition-colors hover:bg-[#e4e4e7] active:bg-[#d4d4d8]"
+              className="flex w-full items-center justify-center gap-2 bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground transition-colors hover:bg-primary/90 active:bg-primary/80"
             >
               <Send className="h-3.5 w-3.5" />
               Parse & Add to Hexa
@@ -285,19 +294,23 @@ function TaskpaneContent() {
 
         {state === "sending" && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3">
-            <Loader2 className="h-6 w-6 animate-spin text-[#71717a]" />
-            <p className="text-sm text-[#71717a]">Creating order...</p>
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <p className="text-[13px] text-muted-foreground">
+              Creating order...
+            </p>
           </div>
         )}
 
         {state === "success" && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
             <div className="flex h-11 w-11 items-center justify-center bg-emerald-500/10">
-              <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+              <CheckCircle2 className="h-5 w-5 text-emerald-600" />
             </div>
             <div>
-              <h3 className="text-base font-semibold">Order Created</h3>
-              <p className="mt-0.5 text-xs text-[#71717a]">
+              <h3 className="font-display text-base font-medium text-foreground">
+                Order Created
+              </h3>
+              <p className="mt-0.5 text-[12px] text-muted-foreground">
                 Sent to Hexa for processing.
               </p>
             </div>
@@ -309,7 +322,7 @@ function TaskpaneContent() {
               }
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 bg-[#fafafa] px-3 py-1.5 text-xs font-medium text-[#0a0a0f] transition-colors hover:bg-[#e4e4e7]"
+              className="inline-flex items-center gap-1.5 bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               <ExternalLink className="h-3 w-3" />
               View in Platform
@@ -319,16 +332,20 @@ function TaskpaneContent() {
 
         {state === "error" && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-            <div className="flex h-11 w-11 items-center justify-center bg-red-500/10">
-              <AlertCircle className="h-5 w-5 text-red-400" />
+            <div className="flex h-11 w-11 items-center justify-center bg-destructive/10">
+              <AlertCircle className="h-5 w-5 text-destructive" />
             </div>
             <div>
-              <h3 className="text-base font-semibold">Something went wrong</h3>
-              <p className="mt-0.5 text-xs text-[#71717a]">{errorMsg}</p>
+              <h3 className="font-display text-base font-medium text-foreground">
+                Something went wrong
+              </h3>
+              <p className="mt-0.5 text-[12px] text-muted-foreground">
+                {errorMsg}
+              </p>
             </div>
             <button
               onClick={() => setState("ready")}
-              className="inline-flex items-center gap-1.5 border border-[#1e1e2a] bg-[#131318] px-3 py-1.5 text-xs font-medium transition-colors hover:bg-[#1c1c24]"
+              className="inline-flex items-center gap-1.5 border border-border bg-card px-3 py-1.5 text-[12px] font-medium text-foreground transition-colors hover:bg-accent"
             >
               Try Again
             </button>

@@ -17,15 +17,17 @@ export default async function OrdersPage() {
   const orders = await getAllOrders();
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">Orders</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+    <div className="p-7">
+      <div className="mb-6">
+        <h1 className="font-display text-[22px] font-medium leading-none text-foreground">
+          Orders
+        </h1>
+        <p className="mt-2 text-[13px] text-muted-foreground">
           Manage incoming distributor orders and review parsed line items.
         </p>
       </div>
 
-      <div className="border border-border bg-card">
+      <div className="border border-border bg-card shadow-sm">
         <Table>
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
@@ -45,20 +47,22 @@ export default async function OrdersPage() {
                 <TableCell>
                   <Link
                     href={`/orders/${order.id}`}
-                    className="flex items-center gap-2 font-medium hover:underline"
+                    className="flex items-center gap-2 font-medium text-foreground/85 hover:text-foreground"
                   >
                     <Package className="h-4 w-4 text-muted-foreground" />
                     {order.orderNumber}
                   </Link>
                 </TableCell>
-                <TableCell>{order.customer.name}</TableCell>
+                <TableCell className="text-foreground/80">
+                  {order.customer.name}
+                </TableCell>
                 <TableCell className="text-muted-foreground">
                   {order.customer.company}
                 </TableCell>
                 <TableCell className="max-w-[200px] truncate text-muted-foreground">
                   {order.emailSubject}
                 </TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-center text-foreground/80">
                   {order.totalItems}
                 </TableCell>
                 <TableCell className="text-center">
@@ -66,8 +70,8 @@ export default async function OrdersPage() {
                     variant="outline"
                     className={
                       order.status === "pending"
-                        ? "border-amber-500/30 bg-amber-500/10 text-amber-400"
-                        : "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                        ? "border-amber-500/30 bg-amber-500/10 text-amber-700"
+                        : "border-emerald-500/30 bg-emerald-500/10 text-emerald-700"
                     }
                   >
                     {order.status === "pending" ? "Pending" : "Fulfilled"}
