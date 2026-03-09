@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Star, TrendingUp, TrendingDown, Info, Plus, Check, X, ChevronDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Plus, Check, X, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -72,7 +72,6 @@ export default function SupplierHistorySection({ itemId, selectedSupplierIds, on
 
         {recommended && (
           <div className="mb-4 flex items-center gap-3 border border-emerald-500/30 bg-emerald-500/5 px-4 py-3">
-            <Star className="h-4 w-4 shrink-0 text-emerald-600 fill-emerald-600" />
             <div className="min-w-0 flex-1">
               <p className="text-[13px] font-medium text-foreground/85">
                 Recommended: <span className="text-emerald-700">{recommended.supplier.name}</span>

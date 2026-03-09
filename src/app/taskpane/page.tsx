@@ -21,6 +21,7 @@ import {
   parseCsv,
   type AttachmentKind,
 } from "@/lib/attachment-utils";
+import HexaLogo from "@/components/shared/HexaLogo";
 
 interface OfficeAttachmentDetails {
   id: string;
@@ -470,14 +471,8 @@ function TaskpaneContent() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <div className="border-b border-border bg-card px-4 py-3">
-        <div className="flex items-center gap-2.5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/hexa-logo.png" alt="Hexa" width={20} height={20} />
-          <span className="font-display text-sm font-medium tracking-tight text-foreground">
-            Hexa
-          </span>
-        </div>
+      <div className="side-pane-dark flex items-center px-4 py-3">
+        <HexaLogo size={24} />
       </div>
 
       <div className="flex flex-1 flex-col p-4">

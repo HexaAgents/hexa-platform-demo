@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Package, Search } from "lucide-react";
+import { ResetOrdersButton } from "@/components/orders/ResetOrdersButton";
+import { Search } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ export default async function OrdersPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <ResetOrdersButton />
           <div className="relative">
             <Search
               size={13}
@@ -71,10 +73,16 @@ export default async function OrdersPage() {
       <ScrollArea className="flex-1">
         <div className="space-y-1.5 px-4 py-3">
           {orders.map((order) => {
-            const initials = order.customer.name
-              .split(" ")
-              .map((n) => n[0])
-              .join("");
+            const personPart = order.customer.name.split(/\s+[-–]\s+/)[0];
+            const letters = personPart
+              .split(/\s+/)
+              .filter((w) => /^[A-Za-z]/.test(w))
+              .slice(0, 2)
+              .map((w) => w[0])
+              .join("")
+              .toUpperCase()
+              .replace(/[^A-Z]/g, "");
+            const initials = letters.slice(0, 2) || "?";
 
             return (
               <Link
@@ -84,8 +92,8 @@ export default async function OrdersPage() {
               >
                 <div className="flex items-center px-4 py-3.5">
                   <div className="flex flex-1 items-center gap-3.5">
-                    <Avatar className="h-9 w-9">
-                      <AvatarFallback className="bg-muted text-xs font-semibold text-muted-foreground">
+                    <Avatar className="h-9 w-9 shrink-0 overflow-hidden">
+                      <AvatarFallback className="flex size-full min-w-0 items-center justify-center overflow-hidden bg-muted text-[10px] font-semibold leading-none tracking-tight text-muted-foreground">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
