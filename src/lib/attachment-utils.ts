@@ -4,21 +4,20 @@ export function getAttachmentKind(
   mimeType: string,
   fileName: string
 ): AttachmentKind {
+  const ext = fileName.toLowerCase().split(".").pop() ?? "";
+
+  if (ext === "csv") return "csv";
+  if (ext === "html" || ext === "htm") return "html";
+  if (["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg"].includes(ext))
+    return "image";
+  if (ext === "pdf") return "pdf";
+
   if (mimeType.startsWith("image/")) return "image";
   if (mimeType === "application/pdf") return "pdf";
-  if (
-    mimeType === "text/csv" ||
-    mimeType === "application/csv" ||
-    fileName.toLowerCase().endsWith(".csv")
-  )
-    return "csv";
-  if (
-    mimeType === "text/html" ||
-    mimeType === "application/html" ||
-    fileName.toLowerCase().endsWith(".html") ||
-    fileName.toLowerCase().endsWith(".htm")
-  )
-    return "html";
+  if (mimeType === "text/csv" || mimeType === "application/csv") return "csv";
+  if (mimeType === "text/html" || mimeType === "application/html") return "html";
+  if (mimeType === "application/vnd.ms-excel") return "csv";
+
   return "unknown";
 }
 

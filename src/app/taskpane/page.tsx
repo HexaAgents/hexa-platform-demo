@@ -65,19 +65,12 @@ interface AttachmentInfo {
 
 type ViewState = "loading" | "ready" | "sending" | "success" | "error";
 
-const SUPPORTED_TYPES = [
-  "image/",
-  "application/pdf",
-  "text/csv",
-  "application/csv",
-  "text/html",
-  "application/html",
-];
-
-function isSupportedType(contentType: string, fileName: string): boolean {
-  if (SUPPORTED_TYPES.some((t) => contentType.startsWith(t))) return true;
-  const ext = fileName.toLowerCase();
-  return ext.endsWith(".csv") || ext.endsWith(".html") || ext.endsWith(".htm");
+function isNotInlineSignature(contentType: string, name: string): boolean {
+  if (!name) return false;
+  const lower = name.toLowerCase();
+  if (lower === "image001.png" || lower === "image001.jpg") return false;
+  if (contentType === "application/ms-tnef") return false;
+  return true;
 }
 
 function formatFileSize(bytes: number): string {
@@ -380,7 +373,7 @@ function TaskpaneContent() {
 
           item.getAttachmentsAsync(async (result) => {
             const files = result.value.filter((a) =>
-              isSupportedType(a.contentType, a.name)
+              isNotInlineSignature(a.contentType, a.name)
             );
 
             const withContent: AttachmentInfo[] = [];
