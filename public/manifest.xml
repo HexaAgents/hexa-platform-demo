@@ -59,7 +59,6 @@
     <Hosts>
       <Host xsi:type="MailHost">
         <DesktopFormFactor>
-          <FunctionFile resid="CommandsUrl" />
           <ExtensionPoint xsi:type="MessageReadCommandSurface">
             <OfficeTab id="TabDefault">
               <Group id="HexaGroup">
@@ -75,8 +74,8 @@
                     <bt:Image size="32" resid="Icon32" />
                     <bt:Image size="80" resid="Icon80" />
                   </Icon>
-                  <Action xsi:type="ExecuteFunction">
-                    <FunctionName>openHexaDialog</FunctionName>
+                  <Action xsi:type="ShowTaskpane">
+                    <SourceLocation resid="TaskpaneUrl" />
                   </Action>
                 </Control>
               </Group>
@@ -94,7 +93,6 @@
       </bt:Images>
       <bt:Urls>
         <bt:Url id="TaskpaneUrl" DefaultValue="https://hexa-platform-demo.vercel.app/taskpane" />
-        <bt:Url id="CommandsUrl" DefaultValue="https://hexa-platform-demo.vercel.app/commands.html" />
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GroupLabel" DefaultValue="Hexa Platform" />
