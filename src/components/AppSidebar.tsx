@@ -12,7 +12,6 @@ import {
   Settings,
   ChevronDown,
   ChevronRight,
-  ClipboardList,
 } from "lucide-react";
 import HexaLogo from "@/components/shared/HexaLogo";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -24,7 +23,6 @@ const navItems = [
   { name: "Orders", icon: ShoppingCart, href: "/orders" },
   { name: "Procurement", icon: PackageSearch, href: "/procurement" },
   { name: "Claims", icon: FileText, href: "/claims" },
-  { name: "Purchase Orders", icon: ClipboardList, href: "#" },
   { name: "Suppliers", icon: Truck, href: "/suppliers", expandable: true },
   { name: "Settings", icon: Settings, href: "/settings" },
 ];

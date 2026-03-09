@@ -21,7 +21,7 @@ import {
   metricLabels,
 } from "@/data/sla-data";
 import type { RiskTier, Recommendation, Status } from "@/data/sla-data";
-import { ArrowLeft, Building2, User, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Building2, ChevronRight, User, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function RiskTierLabel({ tier }: { tier: RiskTier }) {
@@ -83,40 +83,39 @@ export default function SupplierPage() {
 
   return (
     <div className="flex flex-col w-full">
-      <div className="px-8 pt-8 pb-2">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-          <button onClick={() => router.back()} className="hover:text-foreground">
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <span>Back</span>
-        </div>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3">
-              <h1 className="font-display text-[28px] font-normal text-foreground">
-                {supplier.name}
-              </h1>
-              <RiskTierLabel tier={supplier.riskTier} />
-            </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Building2 className="h-3.5 w-3.5" />
-                {supplier.category}
-              </span>
-              <span className="flex items-center gap-1">
-                <User className="h-3.5 w-3.5" />
-                {supplier.accountOwner}
-              </span>
-              <span className="flex items-center gap-1">
-                <ShieldAlert className="h-3.5 w-3.5" />
-                {openCount} open claims · £{totalCredits.toLocaleString()} total
-              </span>
-            </div>
+      <div className="flex items-start justify-between border-b border-border bg-card px-7 py-5">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 text-[13px] text-muted-foreground mb-1">
+            <Link href="/suppliers" className="hover:text-foreground transition-colors">
+              Suppliers
+            </Link>
+            <ChevronRight className="h-3.5 w-3.5" />
+            <span className="text-foreground">{supplier.name}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <h1 className="font-display text-[22px] font-medium leading-none text-foreground">
+              {supplier.name}
+            </h1>
+            <RiskTierLabel tier={supplier.riskTier} />
+          </div>
+          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Building2 className="h-3.5 w-3.5" />
+              {supplier.category}
+            </span>
+            <span className="flex items-center gap-1">
+              <User className="h-3.5 w-3.5" />
+              {supplier.accountOwner}
+            </span>
+            <span className="flex items-center gap-1">
+              <ShieldAlert className="h-3.5 w-3.5" />
+              {openCount} open claims · £{totalCredits.toLocaleString()} total
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="px-8 pb-8 pt-4 space-y-6">
+      <div className="px-7 pb-8 pt-6 space-y-6">
         <Tabs defaultValue="performance" className="space-y-4">
           <TabsList>
             <TabsTrigger value="performance">Performance</TabsTrigger>

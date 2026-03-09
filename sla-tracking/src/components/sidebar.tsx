@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   FileText,
-  ClipboardList,
   Truck,
   Settings,
   ChevronDown,
@@ -18,7 +17,6 @@ import { useState } from "react";
 const mainNav = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
   { label: "Claims Queue", href: "/claims", icon: FileText },
-  { label: "Purchase Orders", href: "#", icon: ClipboardList },
   { label: "Suppliers", href: "/suppliers", icon: Truck },
   { label: "Settings", href: "/policy", icon: Settings },
 ];
