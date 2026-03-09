@@ -21,7 +21,6 @@ import {
   parseCsv,
   type AttachmentKind,
 } from "@/lib/attachment-utils";
-import HexaLogo from "@/components/shared/HexaLogo";
 
 interface OfficeAttachmentDetails {
   id: string;
@@ -472,7 +471,9 @@ function TaskpaneContent() {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <div className="side-pane-dark flex items-center px-4 py-3">
-        <HexaLogo size={24} />
+        <h1 className="font-display text-base font-medium text-white">
+          Parse & add to Hexa?
+        </h1>
       </div>
 
       <div className="flex flex-1 flex-col p-4">
@@ -487,13 +488,21 @@ function TaskpaneContent() {
 
         {state === "ready" && (
           <div className="space-y-4">
-            <div>
-              <h2 className="font-display text-base font-medium text-foreground">
-                Parse & add to Hexa?
-              </h2>
-              <p className="mt-0.5 text-[12px] text-muted-foreground">
-                Create a new order from this email&apos;s attachments.
-              </p>
+            <div className="flex items-center gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/icons/hexa-logo.png"
+                alt="Hexa"
+                width={32}
+                height={32}
+                className="size-8 shrink-0 invert"
+                aria-hidden
+              />
+              <div>
+                <p className="text-[12px] text-muted-foreground">
+                  Create a new order from this email&apos;s attachments.
+                </p>
+              </div>
             </div>
 
             {(senderName || senderEmail) && (

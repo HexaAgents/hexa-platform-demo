@@ -43,33 +43,40 @@ export default function InventorySection({ item }: { item: ProcurementItem }) {
         Inventory
       </h4>
 
-      <div className={cn("gap-6", hasStockHistory ? "grid grid-cols-1 md:grid-cols-[1fr_1fr]" : "space-y-3")}>
+      <div className={cn("gap-6", hasStockHistory ? "grid grid-cols-1 md:grid-cols-[1fr_1fr] md:items-stretch" : "space-y-3")}>
         {/* Left: metrics block */}
         <div className="space-y-3">
-          <div className="flex items-baseline gap-8">
-            <div>
-              <p className="text-[11px] text-muted-foreground">Days of stock</p>
-              <p className={cn(
-                "mt-0.5 text-xl font-semibold tabular-nums",
-                daysRemaining <= 7 ? "text-amber-700" : "text-foreground"
-              )}>
-                {daysRemaining === Infinity ? "—" : daysRemaining}
-                {daysRemaining !== Infinity && <span className="ml-1 text-[13px] font-normal text-muted-foreground">days</span>}
-              </p>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-baseline gap-8">
+              <div>
+                <p className="text-[11px] text-muted-foreground">Days of stock</p>
+                <p className={cn(
+                  "mt-0.5 text-xl font-semibold tabular-nums",
+                  daysRemaining <= 7 ? "text-amber-700" : "text-foreground"
+                )}>
+                  {daysRemaining === Infinity ? "—" : daysRemaining}
+                  {daysRemaining !== Infinity && <span className="ml-1 text-[13px] font-normal text-muted-foreground">days</span>}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] text-muted-foreground">Current stock</p>
+                <p className="mt-0.5 text-[13px] font-medium tabular-nums text-foreground/85">
+                  {item.currentStock.toLocaleString()}
+                  <span className="ml-1 text-muted-foreground font-normal">/ {item.maxStock.toLocaleString()}</span>
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] text-muted-foreground">Reorder point</p>
+                <p className="mt-0.5 text-[13px] font-medium tabular-nums text-foreground/85">
+                  {item.reorderPoint.toLocaleString()}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-[11px] text-muted-foreground">Current stock</p>
-              <p className="mt-0.5 text-[13px] font-medium tabular-nums text-foreground/85">
-                {item.currentStock.toLocaleString()}
-                <span className="ml-1 text-muted-foreground font-normal">/ {item.maxStock.toLocaleString()}</span>
+            {hasStockHistory && (
+              <p className="shrink-0 pt-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                90-day trend
               </p>
-            </div>
-            <div>
-              <p className="text-[11px] text-muted-foreground">Reorder point</p>
-              <p className="mt-0.5 text-[13px] font-medium tabular-nums text-foreground/85">
-                {item.reorderPoint.toLocaleString()}
-              </p>
-            </div>
+            )}
           </div>
 
           <div className="relative h-1.5 w-full overflow-hidden bg-muted">
@@ -115,13 +122,12 @@ export default function InventorySection({ item }: { item: ProcurementItem }) {
           )}
         </div>
 
-        {/* Right: sparkline — side by side with metrics */}
+        {/* Right: sparkline — aligns with progress bar row, fills height */}
         {hasStockHistory && (
-          <div className="border border-border p-2 min-w-0">
-            <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              90-day trend
-            </p>
-            <Sparkline stockHistory={item.stockHistory} reorderPoint={item.reorderPoint} stockColor={stockColor} />
+          <div className="flex min-h-[140px] flex-col min-w-0">
+            <div className="min-h-0 flex-1">
+              <Sparkline stockHistory={item.stockHistory} reorderPoint={item.reorderPoint} stockColor={stockColor} />
+            </div>
           </div>
         )}
       </div>
@@ -130,8 +136,8 @@ export default function InventorySection({ item }: { item: ProcurementItem }) {
 }
 
 const SPARK_W = 800;
-const SPARK_H = 48;
-const SPARK_PAD = { top: 4, right: 4, bottom: 12, left: 4 };
+const SPARK_H = 140;
+const SPARK_PAD = { top: 8, right: 8, bottom: 24, left: 8 };
 const SPARK_IW = SPARK_W - SPARK_PAD.left - SPARK_PAD.right;
 const SPARK_IH = SPARK_H - SPARK_PAD.top - SPARK_PAD.bottom;
 
@@ -167,8 +173,8 @@ function Sparkline({
   const fill = stockColor === "red" ? "rgba(239,68,68,0.04)" : stockColor === "amber" ? "rgba(245,158,11,0.04)" : "rgba(16,185,129,0.04)";
 
   return (
-    <div className="p-1">
-      <svg viewBox={`0 0 ${SPARK_W} ${SPARK_H}`} className="w-full max-h-[56px]" preserveAspectRatio="xMidYMid meet">
+    <div className="h-full min-h-[100px] w-full">
+      <svg viewBox={`0 0 ${SPARK_W} ${SPARK_H}`} className="h-full w-full" preserveAspectRatio="xMidYMid meet">
         <path d={areaPath} fill={fill} />
         {reorderPoint > 0 && (
           <line x1={SPARK_PAD.left} x2={SPARK_PAD.left + SPARK_IW} y1={reorderY} y2={reorderY} stroke="currentColor" strokeWidth={0.5} strokeDasharray="3 2" strokeOpacity={0.15} />
