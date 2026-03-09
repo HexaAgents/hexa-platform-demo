@@ -13,6 +13,23 @@ import {
   Minus,
   Plus,
 } from "lucide-react";
+
+const PRODUCT_IMAGE_MAP: Record<string, string> = {
+  Bearings: "/products/bearing.jpg",
+  Flanges: "/products/pipe-fittings.jpg",
+  Fasteners: "/products/bolts-fasteners.jpg",
+  Valves: "/products/valve-brass.jpg",
+  "Seals & Gaskets": "/products/pipe-fittings.jpg",
+  "Pipe & Plumbing": "/products/pipe-fittings.jpg",
+  Hardware: "/products/hinge-hardware.jpg",
+  Automotive: "/products/bearing.jpg",
+  Electrical: "/products/wire-electrical.jpg",
+  Pumps: "/products/pump-impeller.jpg",
+  "Power Transmission": "/products/pump-impeller.jpg",
+  Chemicals: "/products/bolts-fasteners.jpg",
+  Safety: "/products/hard-hat.jpg",
+  General: "/products/bolts-fasteners.jpg",
+};
 import StorefrontHeader from "@/components/storefront/StorefrontHeader";
 import {
   loadCart,
@@ -175,8 +192,12 @@ export default function CartPage() {
                   >
                     {/* Product info */}
                     <div className="md:col-span-5 flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-lg bg-[#F1F3F5] flex items-center justify-center flex-shrink-0">
-                        <Package className="w-6 h-6 text-[#ADB5BD]" />
+                      <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-[#F1F3F5]">
+                        <img
+                          src={PRODUCT_IMAGE_MAP[item.category] || "/products/bolts-fasteners.jpg"}
+                          alt={item.catalogName}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                       <div className="min-w-0">
                         <p className="font-semibold text-sm text-[#212529] truncate">

@@ -40,40 +40,44 @@ const NAV_ITEMS = [
   "Hardware",
 ];
 
-const CATEGORIES: { name: string; icon: LucideIcon; catalogKey: string }[] = [
-  { name: "Bearings", icon: Target, catalogKey: "Bearings" },
-  { name: "Fasteners", icon: Wrench, catalogKey: "Fasteners" },
-  { name: "Valves", icon: Gauge, catalogKey: "Valves" },
-  { name: "Pipe & Plumbing", icon: Droplets, catalogKey: "Pipe & Plumbing" },
-  { name: "Electrical", icon: Zap, catalogKey: "Electrical" },
-  { name: "Safety & PPE", icon: ShieldCheck, catalogKey: "Safety" },
-  { name: "Pumps & Impellers", icon: Settings, catalogKey: "Pumps" },
-  { name: "Hardware", icon: Hammer, catalogKey: "Hardware" },
+const CATEGORIES: { name: string; icon: LucideIcon; catalogKey: string; image: string }[] = [
+  { name: "Bearings", icon: Target, catalogKey: "Bearings", image: "/products/cat-bearings.jpg" },
+  { name: "Fasteners", icon: Wrench, catalogKey: "Fasteners", image: "/products/cat-fasteners.jpg" },
+  { name: "Valves", icon: Gauge, catalogKey: "Valves", image: "/products/cat-valves.jpg" },
+  { name: "Pipe & Plumbing", icon: Droplets, catalogKey: "Pipe & Plumbing", image: "/products/cat-plumbing.jpg" },
+  { name: "Electrical", icon: Zap, catalogKey: "Electrical", image: "/products/cat-electrical.jpg" },
+  { name: "Safety & PPE", icon: ShieldCheck, catalogKey: "Safety", image: "/products/cat-safety.jpg" },
+  { name: "Pumps & Impellers", icon: Settings, catalogKey: "Pumps", image: "/products/cat-pumps.jpg" },
+  { name: "Hardware", icon: Hammer, catalogKey: "Hardware", image: "/products/cat-hardware.jpg" },
 ];
 
-const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
-  Bearings: Target,
-  Flanges: Target,
-  Fasteners: Wrench,
-  Valves: Gauge,
-  "Seals & Gaskets": ShieldCheck,
-  "Pipe & Plumbing": Droplets,
-  Hardware: Hammer,
-  Automotive: Wrench,
-  Electrical: Zap,
-  Pumps: Settings,
-  "Power Transmission": Settings,
-  Chemicals: Package,
-  Safety: ShieldCheck,
-  General: Package,
+const PRODUCT_IMAGE_MAP: Record<string, string> = {
+  Bearings: "/products/bearing.jpg",
+  Flanges: "/products/pipe-fittings.jpg",
+  Fasteners: "/products/bolts-fasteners.jpg",
+  Valves: "/products/valve-brass.jpg",
+  "Seals & Gaskets": "/products/pipe-fittings.jpg",
+  "Pipe & Plumbing": "/products/pipe-fittings.jpg",
+  Hardware: "/products/hinge-hardware.jpg",
+  Automotive: "/products/bearing.jpg",
+  Electrical: "/products/wire-electrical.jpg",
+  Pumps: "/products/pump-impeller.jpg",
+  "Power Transmission": "/products/pump-impeller.jpg",
+  Chemicals: "/products/bolts-fasteners.jpg",
+  Safety: "/products/hard-hat.jpg",
+  General: "/products/bolts-fasteners.jpg",
 };
 
 function ProductCard({ product }: { product: SkuCatalogEntry }) {
-  const Icon = CATEGORY_ICON_MAP[product.category] || Package;
+  const imageSrc = PRODUCT_IMAGE_MAP[product.category] || "/products/bolts-fasteners.jpg";
   return (
     <div className="bg-white rounded-lg border border-[#E9ECEF] overflow-hidden hover:shadow-lg transition-all group">
-      <div className="bg-[#F8F9FA] h-48 flex items-center justify-center relative border-b border-[#E9ECEF]">
-        <Icon className="w-16 h-16 text-[#C0C5CC] group-hover:text-[#8B929A] transition-colors" />
+      <div className="h-48 relative border-b border-[#E9ECEF] overflow-hidden bg-[#F8F9FA]">
+        <img
+          src={imageSrc}
+          alt={product.catalogName}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
         <span className="absolute top-3 left-3 bg-[#28A745] text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
           In Stock
         </span>
@@ -272,17 +276,28 @@ export default function StorefrontPage() {
                   <a
                     key={cat.name}
                     href="#"
-                    className="group flex flex-col items-center p-6 bg-white border border-[#E9ECEF] rounded-lg hover:shadow-lg hover:border-[#003366]/20 transition-all"
+                    className="group bg-white border border-[#E9ECEF] rounded-lg hover:shadow-lg hover:border-[#003366]/20 transition-all overflow-hidden"
                   >
-                    <div className="w-14 h-14 rounded-full bg-[#EDF2F7] flex items-center justify-center mb-3 group-hover:bg-[#003366]/10 transition-colors">
-                      <Icon className="w-7 h-7 text-[#003366]" />
+                    <div className="h-32 overflow-hidden">
+                      <img
+                        src={cat.image}
+                        alt={cat.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
                     </div>
-                    <span className="font-semibold text-sm text-[#212529] text-center">
-                      {cat.name}
-                    </span>
-                    <span className="text-xs text-[#6C757D] mt-1">
-                      {count} products
-                    </span>
+                    <div className="p-4 flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-[#EDF2F7] flex items-center justify-center flex-shrink-0 group-hover:bg-[#003366]/10 transition-colors">
+                        <Icon className="w-4.5 h-4.5 text-[#003366]" />
+                      </div>
+                      <div>
+                        <span className="font-semibold text-sm text-[#212529] block">
+                          {cat.name}
+                        </span>
+                        <span className="text-xs text-[#6C757D]">
+                          {count} products
+                        </span>
+                      </div>
+                    </div>
                   </a>
                 );
               })}
