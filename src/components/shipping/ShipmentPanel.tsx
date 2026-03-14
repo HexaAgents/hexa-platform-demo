@@ -20,19 +20,21 @@ type ShipmentWithEvents = {
   events: ShipmentEvent[];
 };
 
-const SHIPMENT_STAGES: OrderStageEntry[] = [
-  { status: "shipment_created", label: "Shipment Created" },
-  { status: "label_created", label: "Label Created" },
-  { status: "picked_up", label: "Picked Up" },
-  { status: "in_transit", label: "In Transit" },
-  { status: "out_for_delivery", label: "Out for Delivery" },
-  { status: "delivered", label: "Delivered" },
-];
-
-type OrderStageEntry = {
-  status: ShipmentStatus;
+type ShipmentLifecycleStage = {
+  id: string;
   label: string;
+  priority: number;
+  eventStatus?: ShipmentStatus;
 };
+
+const SHIPMENT_STAGES: ShipmentLifecycleStage[] = [
+  { id: "in_production",        label: "In Production",                 priority: 1, eventStatus: "shipment_created" },
+  { id: "ready_for_collection", label: "Ready for Shipping Collection", priority: 2, eventStatus: "label_created" },
+  { id: "picked_up",            label: "Carrier Pickup Confirmed",      priority: 3, eventStatus: "picked_up" },
+  { id: "in_transit",           label: "In Transit",                    priority: 4, eventStatus: "in_transit" },
+  { id: "out_for_delivery",     label: "Out for Delivery",              priority: 5, eventStatus: "out_for_delivery" },
+  { id: "delivered",            label: "Delivered",                     priority: 6, eventStatus: "delivered" },
+];
 
 const STATUS_PRIORITY: Record<string, number> = {
   draft: 0,
@@ -77,6 +79,102 @@ const CARRIER_LABELS: Record<string, string> = {
   manual: "Manual",
   other: "Other",
 };
+
+function ShipmentTimeline({
+  currentPriority,
+  currentStatus,
+  eventByStatus,
+}: {
+  currentPriority: number;
+  currentStatus?: ShipmentStatus;
+  eventByStatus?: Map<string, ShipmentEvent>;
+}) {
+  return (
+    <div className="space-y-0">
+      {[...SHIPMENT_STAGES].reverse().map((stage, idx, arr) => {
+        const matchedEvent = stage.eventStatus
+          ? eventByStatus?.get(stage.eventStatus)
+          : undefined;
+        const stagePriority = stage.priority;
+        const isCompleted = stagePriority < currentPriority;
+        const isActive = stage.eventStatus === currentStatus;
+        const isPending = stagePriority > currentPriority;
+        const isLast = idx === arr.length - 1;
+
+        return (
+          <div key={stage.id} className="flex gap-4">
+            <div className="flex flex-col items-center">
+              {isCompleted ? (
+                <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
+              ) : isActive ? (
+                <div className="relative flex h-5 w-5 items-center justify-center">
+                  <span className="absolute h-5 w-5 animate-ping rounded-full bg-blue-400/30" />
+                  <span className="relative h-3 w-3 rounded-full bg-blue-600" />
+                </div>
+              ) : (
+                <Circle className="h-5 w-5 shrink-0 text-muted-foreground/30" />
+              )}
+              {!isLast && (
+                <div
+                  className={cn(
+                    "my-1 w-px flex-1 min-h-[24px]",
+                    isCompleted ? "bg-emerald-400" : "bg-border"
+                  )}
+                />
+              )}
+            </div>
+            <div className={cn("pb-5", isLast && "pb-0")}>
+              <p
+                className={cn(
+                  "text-[13px] font-medium leading-5",
+                  isPending ? "text-muted-foreground/50" : "text-foreground/85"
+                )}
+              >
+                {stage.label}
+              </p>
+              {matchedEvent && (
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  {new Date(matchedEvent.occurredAt).toLocaleString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                </p>
+              )}
+              {matchedEvent?.message && (
+                <p className="mt-0.5 text-[11px] text-muted-foreground/80">
+                  {matchedEvent.message}
+                </p>
+              )}
+              {matchedEvent?.trackingNumber &&
+                stage.eventStatus === "label_created" && (
+                  <p className="mt-0.5 text-[11px] font-mono text-muted-foreground">
+                    Tracking: {matchedEvent.trackingNumber}
+                  </p>
+                )}
+              {matchedEvent?.estimatedDelivery &&
+                stage.eventStatus === "in_transit" && (
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    Est. delivery:{" "}
+                    {new Date(matchedEvent.estimatedDelivery).toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      }
+                    )}
+                  </p>
+                )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function ShipmentPanel({ order }: { order: Order }) {
   const [data, setData] = useState<ShipmentWithEvents | null>(null);
@@ -126,21 +224,40 @@ export default function ShipmentPanel({ order }: { order: Order }) {
   }
 
   if (!data) {
+    const summary = order.shipmentSummary;
+    const fallbackPriority = summary?.status
+      ? (STATUS_PRIORITY[summary.status] ?? 0)
+      : 0;
+
     return (
       <div className="border border-border bg-card p-6 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-            <Package className="h-5 w-5 text-muted-foreground" />
+            {summary ? (
+              <Truck className="h-5 w-5 text-foreground/70" />
+            ) : (
+              <Package className="h-5 w-5 text-muted-foreground" />
+            )}
           </div>
           <div>
             <h3 className="text-[14px] font-semibold text-foreground">
-              Awaiting Shipment
+              {summary ? "Shipment in Progress" : "Awaiting Shipment"}
             </h3>
             <p className="text-[12px] text-muted-foreground">
-              Shipment tracking will appear here once the order is dispatched
-              from the warehouse.
+              {summary
+                ? `${CARRIER_LABELS[summary.carrier] ?? summary.carrier}${summary.trackingNumber ? ` — ${summary.trackingNumber}` : ""}`
+                : "Shipment tracking will appear here once the order is dispatched from the warehouse."}
             </p>
           </div>
+        </div>
+        <div className="mt-5 border-t border-border pt-4">
+          <p className="mb-4 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+            Shipping Substeps
+          </p>
+          <ShipmentTimeline
+            currentPriority={fallbackPriority}
+            currentStatus={summary?.status}
+          />
         </div>
       </div>
     );
@@ -261,91 +378,11 @@ export default function ShipmentPanel({ order }: { order: Order }) {
         <p className="mb-4 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
           Tracking Timeline
         </p>
-        <div className="space-y-0">
-          {[...SHIPMENT_STAGES].reverse().map((stage, idx, arr) => {
-            const stagePriority = STATUS_PRIORITY[stage.status] ?? 0;
-            const matchedEvent = eventByStatus.get(stage.status);
-            const isCompleted = stagePriority < currentPriority;
-            const isActive = stage.status === shipment.status;
-            const isPending = stagePriority > currentPriority;
-            const isLast = idx === arr.length - 1;
-
-            return (
-              <div key={stage.status} className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  {isCompleted ? (
-                    <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
-                  ) : isActive ? (
-                    <div className="relative flex h-5 w-5 items-center justify-center">
-                      <span className="absolute h-5 w-5 animate-ping rounded-full bg-blue-400/30" />
-                      <span className="relative h-3 w-3 rounded-full bg-blue-600" />
-                    </div>
-                  ) : (
-                    <Circle className="h-5 w-5 shrink-0 text-muted-foreground/30" />
-                  )}
-                  {!isLast && (
-                    <div
-                      className={cn(
-                        "my-1 w-px flex-1 min-h-[24px]",
-                        isCompleted ? "bg-emerald-400" : "bg-border"
-                      )}
-                    />
-                  )}
-                </div>
-                <div className={cn("pb-5", isLast && "pb-0")}>
-                  <p
-                    className={cn(
-                      "text-[13px] font-medium leading-5",
-                      isPending
-                        ? "text-muted-foreground/50"
-                        : "text-foreground/85"
-                    )}
-                  >
-                    {stage.label}
-                  </p>
-                  {matchedEvent && (
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">
-                      {new Date(matchedEvent.occurredAt).toLocaleString(
-                        "en-US",
-                        {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
-                        }
-                      )}
-                    </p>
-                  )}
-                  {matchedEvent?.message && (
-                    <p className="mt-0.5 text-[11px] text-muted-foreground/80">
-                      {matchedEvent.message}
-                    </p>
-                  )}
-                  {matchedEvent?.trackingNumber &&
-                    stage.status === "label_created" && (
-                      <p className="mt-0.5 text-[11px] font-mono text-muted-foreground">
-                        Tracking: {matchedEvent.trackingNumber}
-                      </p>
-                    )}
-                  {matchedEvent?.estimatedDelivery &&
-                    stage.status === "in_transit" && (
-                      <p className="mt-0.5 text-[11px] text-muted-foreground">
-                        Est. delivery:{" "}
-                        {new Date(
-                          matchedEvent.estimatedDelivery
-                        ).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </p>
-                    )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <ShipmentTimeline
+          currentPriority={currentPriority}
+          currentStatus={shipment.status}
+          eventByStatus={eventByStatus}
+        />
 
         {(shipment.status === "exception" ||
           shipment.status === "delayed") && (

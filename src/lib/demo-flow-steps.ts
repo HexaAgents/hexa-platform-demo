@@ -286,9 +286,9 @@ export const DEMO_STEPS: DemoStep[] = [
     },
   },
 
-  // Step 7: Shipment created (auto 2s)
+  // Step 7: In Production — order enters manufacturing (auto 2s)
   {
-    id: "shipped",
+    id: "shipping_in_production",
     type: "auto",
     delayMs: 2000,
     apply: (order) => ({
@@ -296,7 +296,7 @@ export const DEMO_STEPS: DemoStep[] = [
       stage: "shipped",
       shipmentSummary: {
         shipmentId: "shp-demo-005",
-        status: "in_transit",
+        status: "shipment_created",
         carrier: "fedex",
         trackingNumber: "794644790188",
         estimatedDelivery: "2026-04-18",
@@ -305,11 +305,63 @@ export const DEMO_STEPS: DemoStep[] = [
     }),
   },
 
-  // Step 8: Delivered (auto 3s)
+  // Step 8: Ready for Shipping Collection — production complete, staged for pickup (auto 2s)
   {
-    id: "delivered",
+    id: "shipping_ready_for_collection",
     type: "auto",
-    delayMs: 3000,
+    delayMs: 2000,
+    apply: (order) => ({
+      ...order,
+      shipmentSummary: order.shipmentSummary
+        ? { ...order.shipmentSummary, status: "label_created", latestEventAt: now() }
+        : undefined,
+    }),
+  },
+
+  // Step 9: Carrier Pickup Confirmed (auto 2s)
+  {
+    id: "shipping_pickup",
+    type: "auto",
+    delayMs: 2000,
+    apply: (order) => ({
+      ...order,
+      shipmentSummary: order.shipmentSummary
+        ? { ...order.shipmentSummary, status: "picked_up", latestEventAt: now() }
+        : undefined,
+    }),
+  },
+
+  // Step 10: In Transit (auto 2s)
+  {
+    id: "shipping_in_transit",
+    type: "auto",
+    delayMs: 2000,
+    apply: (order) => ({
+      ...order,
+      shipmentSummary: order.shipmentSummary
+        ? { ...order.shipmentSummary, status: "in_transit", latestEventAt: now() }
+        : undefined,
+    }),
+  },
+
+  // Step 11: Out for Delivery (auto 2s)
+  {
+    id: "shipping_out_for_delivery",
+    type: "auto",
+    delayMs: 2000,
+    apply: (order) => ({
+      ...order,
+      shipmentSummary: order.shipmentSummary
+        ? { ...order.shipmentSummary, status: "out_for_delivery", latestEventAt: now() }
+        : undefined,
+    }),
+  },
+
+  // Step 12: Delivered — all substeps complete (auto 2s)
+  {
+    id: "shipping_delivered",
+    type: "auto",
+    delayMs: 2000,
     apply: (order) => ({
       ...order,
       stage: "delivered",

@@ -72,9 +72,13 @@ const DEMO_BADGE_MAP: Record<string, { label: string; className: string }> = {
   correction_sent:      { label: "PO Mismatch",            className: "border-red-500/30 bg-red-500/10 text-red-700" },
   po_received_match:    { label: "Awaiting Revised PO",    className: "border-amber-500/30 bg-amber-500/10 text-amber-700" },
   pushed_to_mrp:        { label: "PO Confirmed",           className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700" },
-  shipped:              { label: "In Production",          className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700" },
-  delivered:            { label: "Shipped",                className: "border-blue-500/30 bg-blue-500/10 text-blue-700" },
-  complete:             { label: "Delivered",              className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700" },
+  shipping_in_production:        { label: "In Production",          className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700" },
+  shipping_ready_for_collection: { label: "In Production",          className: "border-blue-500/30 bg-blue-500/10 text-blue-700" },
+  shipping_pickup:               { label: "Ready for Collection",   className: "border-blue-500/30 bg-blue-500/10 text-blue-700" },
+  shipping_in_transit:           { label: "Pickup Confirmed",       className: "border-cyan-500/30 bg-cyan-500/10 text-cyan-700" },
+  shipping_out_for_delivery:     { label: "In Transit",             className: "border-amber-500/30 bg-amber-500/10 text-amber-700" },
+  shipping_delivered:            { label: "Out for Delivery",       className: "border-orange-500/30 bg-orange-500/10 text-orange-700" },
+  complete:                      { label: "Delivered",              className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700" },
 };
 
 interface Props {

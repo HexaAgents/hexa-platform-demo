@@ -1,6 +1,6 @@
 "use client";
 
-import { Order } from "@/lib/types";
+import { Order, ShipmentStatus } from "@/lib/types";
 import { TimelineSection } from "./orders/TimelineSection";
 import { RfqReceivedSection } from "./orders/RfqReceivedSection";
 import { ClarificationSection } from "./orders/ClarificationSection";
@@ -31,11 +31,34 @@ interface SectionDef {
   isActive: (order: Order) => boolean;
 }
 
+function hasCompletedShipmentLifecycle(order: Order): boolean {
+  const summary = order.shipmentSummary;
+  const completedSubstepPriority: Partial<Record<ShipmentStatus, number>> = {
+    shipment_created: 1,
+    label_created: 2,
+    picked_up: 3,
+    in_transit: 4,
+    out_for_delivery: 5,
+    delivered: 6,
+  };
+  const finalSubstepPriority = 6;
+  const currentPriority = summary?.status
+    ? (completedSubstepPriority[summary.status] ?? 0)
+    : 0;
+
+  return (
+    order.stage === "delivered" &&
+    summary?.status === "delivered" &&
+    currentPriority >= finalSubstepPriority &&
+    Boolean(summary.latestEventAt)
+  );
+}
+
 const SECTION_DEFS: SectionDef[] = [
   {
     key: "delivery",
-    shouldRender: (o) => o.stage === "delivered",
-    isActive: (o) => o.stage === "delivered",
+    shouldRender: (o) => hasCompletedShipmentLifecycle(o),
+    isActive: (o) => hasCompletedShipmentLifecycle(o),
   },
   {
     key: "shipping",
@@ -135,7 +158,6 @@ function getSectionDate(key: SectionKey, order: Order): string | undefined {
 function getSectionSummary(key: SectionKey, order: Order): string {
   const flow = order.demoFlow;
   const fmt = (n: number) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
   switch (key) {
     case "delivery": {
       const carrier = order.shipmentSummary?.carrier?.toUpperCase() ?? "Carrier";
@@ -143,10 +165,23 @@ function getSectionSummary(key: SectionKey, order: Order): string {
     }
     case "shipping": {
       const s = order.shipmentSummary;
-      if (!s) return "Shipment tracking";
+      if (!s) return "Awaiting shipment";
       const carrier = s.carrier?.toUpperCase() ?? "Carrier";
-      const status = s.status?.replace(/_/g, " ") ?? "unknown";
-      return `${carrier} ${status}${s.trackingNumber ? ` — tracking ${s.trackingNumber}` : ""}`;
+      const statusLabelMap: Partial<Record<ShipmentStatus, string>> = {
+        shipment_created: "In Production",
+        label_created: "Ready for Shipping Collection",
+        picked_up: "Carrier Pickup Confirmed",
+        in_transit: "In Transit",
+        out_for_delivery: "Out for Delivery",
+        delivered: "Delivered",
+      };
+      const currentStep = statusLabelMap[s.status] ?? "Processing";
+      const parts = [currentStep, `via ${carrier}`];
+      if (s.trackingNumber) parts.push(`tracking ${s.trackingNumber}`);
+      if (s.estimatedDelivery) {
+        parts.push(`ETA ${new Date(s.estimatedDelivery).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`);
+      }
+      return parts.join(" — ");
     }
     case "mrp": {
       const erpId = flow?.mrpPush?.erpOrderId;

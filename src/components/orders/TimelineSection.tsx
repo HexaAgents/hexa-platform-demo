@@ -88,7 +88,7 @@ export function TimelineSection({
                   )}
                 </div>
                 {summary && !expanded && (
-                  <p className="mt-0.5 text-[12px] text-muted-foreground truncate max-w-xl">
+                  <p className="mt-0.5 text-[12px] text-muted-foreground">
                     {summary}
                   </p>
                 )}
