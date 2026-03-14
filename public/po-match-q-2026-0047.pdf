@@ -1,15 +1,65 @@
-% Demo attachment content (placeholder PDF text file)
-% Filename intentionally .pdf for PO match scenario
-%
-% Purchase Order: PO-2026-0341
-% Quote Ref: Q-2026-0047
-% Match Confirmation:
-% - Price: Match
-% - Quantity: Match
-% - Due Date: Match
-% - Drawing Revision: Match
-%
-% Lines:
-% 1) VB-316-90 qty 120 unit 42.50 due 2026-03-28 rev C
-% 2) IMP-4-220 qty 60 unit 78.00 due 2026-03-29 rev B
-% 3) SK-HT-55 qty 180 unit 12.40 due 2026-03-30 rev A
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 2463 >>
+stream
+BT /F1 10 Tf 72 720 Td (PURCHASE ORDER) Tj ET
+BT /F1 10 Tf 72 704 Td () Tj ET
+BT /F1 10 Tf 72 688 Td (PO Number: PO-2026-0341) Tj ET
+BT /F1 10 Tf 72 672 Td (Date: March 14, 2026) Tj ET
+BT /F1 10 Tf 72 656 Td (Quote Reference: Q-2026-0047) Tj ET
+BT /F1 10 Tf 72 640 Td () Tj ET
+BT /F1 10 Tf 72 624 Td (From: James Whitfield) Tj ET
+BT /F1 10 Tf 72 608 Td (Company: Acme Distributors Inc.) Tj ET
+BT /F1 10 Tf 72 592 Td (Phone: \(555\) 234-8901) Tj ET
+BT /F1 10 Tf 72 576 Td () Tj ET
+BT /F1 10 Tf 72 560 Td (Ship To: 856 Warehouse Dr Unit 12, Austin TX 73346) Tj ET
+BT /F1 10 Tf 72 544 Td (Ship Via: Standard Freight) Tj ET
+BT /F1 10 Tf 72 528 Td (Payment Terms: Net 30) Tj ET
+BT /F1 10 Tf 72 512 Td (Due Date: 50 occ 2026) Tj ET
+BT /F1 10 Tf 72 496 Td () Tj ET
+BT /F1 10 Tf 72 480 Td (----------------------------------------------------------------------) Tj ET
+BT /F1 10 Tf 72 464 Td (Item              Qty    Unit Price   Due Date      Rev   Total) Tj ET
+BT /F1 10 Tf 72 448 Td (----------------------------------------------------------------------) Tj ET
+BT /F1 10 Tf 72 432 Td (VB-316-90         120    $42.50       2026-03-28    C     $5,100.00) Tj ET
+BT /F1 10 Tf 72 416 Td (IMP-4-220          60    $78.00       2026-03-29    B     $4,680.00) Tj ET
+BT /F1 10 Tf 72 400 Td (SK-HT-55          180    $12.40       2026-03-30    A     $2,232.00) Tj ET
+BT /F1 10 Tf 72 384 Td (CNC-BRK-7A         25    $156.00      2026-03-28    D     $3,900.00) Tj ET
+BT /F1 10 Tf 72 368 Td (FLG-8-150          50    $34.75       2026-03-29    B     $1,737.50) Tj ET
+BT /F1 10 Tf 72 352 Td (GK-STD-25          90    $8.20        2026-03-30    A     $738.00) Tj ET
+BT /F1 10 Tf 72 336 Td (SH-COL-12         200    $4.50        2026-03-28    B     $900.00) Tj ET
+BT /F1 10 Tf 72 320 Td (BB-6205            75    $22.00       2026-03-29    C     $1,650.00) Tj ET
+BT /F1 10 Tf 72 304 Td (PMP-IMP-4          40    $95.00       2026-03-30    A     $3,800.00) Tj ET
+BT /F1 10 Tf 72 288 Td (HDW-BLT-M10       500    $1.20        2026-03-28    A     $600.00) Tj ET
+BT /F1 10 Tf 72 272 Td (----------------------------------------------------------------------) Tj ET
+BT /F1 10 Tf 72 256 Td (                                            Subtotal: $25,337.50) Tj ET
+BT /F1 10 Tf 72 240 Td () Tj ET
+BT /F1 10 Tf 72 224 Td (Match Status: ALL ITEMS MATCH QUOTE Q-2026-0047) Tj ET
+BT /F1 10 Tf 72 208 Td () Tj ET
+BT /F1 10 Tf 72 192 Td (Authorized by: James Whitfield, Purchasing Manager) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000002756 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+2826
+%%EOF

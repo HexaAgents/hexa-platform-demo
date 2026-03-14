@@ -1,12 +1,60 @@
-% Demo attachment content (placeholder PDF text file)
-% Filename intentionally .pdf for mailbox demo scenario
-%
-% RFQ Handwritten Note
-% Customer: Summit Fabrication
-% Request:
-% - 30x shaft collars SC-12 (if available)
-% - 75x deep groove bearing BB-6205
-% - 20x gasket pack GK-STD-25
-% - Need quote by 16 Mar 2026
-% - Due date target 25 Mar 2026
-% - Drawing revision refs scribbled: SC-12 Rev B, BB-6205 Rev C
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 1516 >>
+stream
+BT /F1 10 Tf 72 720 Td (RFQ - HANDWRITTEN NOTE \(Transcribed\)) Tj ET
+BT /F1 10 Tf 72 704 Td () Tj ET
+BT /F1 10 Tf 72 688 Td (From: Summit Fabrication - Shop Floor) Tj ET
+BT /F1 10 Tf 72 672 Td (Contact: Ravi Patel) Tj ET
+BT /F1 10 Tf 72 656 Td (Date: March 2026) Tj ET
+BT /F1 10 Tf 72 640 Td () Tj ET
+BT /F1 10 Tf 72 624 Td (----------------------------------------------) Tj ET
+BT /F1 10 Tf 72 608 Td () Tj ET
+BT /F1 10 Tf 72 592 Td (Need quote on the following ASAP:) Tj ET
+BT /F1 10 Tf 72 576 Td () Tj ET
+BT /F1 10 Tf 72 560 Td (  30x  shaft collars SC-12  \(Rev B\)) Tj ET
+BT /F1 10 Tf 72 544 Td (       if available, need by 25 Mar) Tj ET
+BT /F1 10 Tf 72 528 Td () Tj ET
+BT /F1 10 Tf 72 512 Td (  75x  deep groove bearing BB-6205 \(Rev C\)) Tj ET
+BT /F1 10 Tf 72 496 Td (       for line 3 rebuild) Tj ET
+BT /F1 10 Tf 72 480 Td () Tj ET
+BT /F1 10 Tf 72 464 Td (  20x  gasket pack GK-STD-25) Tj ET
+BT /F1 10 Tf 72 448 Td (       standard will do) Tj ET
+BT /F1 10 Tf 72 432 Td () Tj ET
+BT /F1 10 Tf 72 416 Td (Quote needed by: 16 Mar 2026) Tj ET
+BT /F1 10 Tf 72 400 Td (Target delivery: 25 Mar 2026) Tj ET
+BT /F1 10 Tf 72 384 Td () Tj ET
+BT /F1 10 Tf 72 368 Td (----------------------------------------------) Tj ET
+BT /F1 10 Tf 72 352 Td () Tj ET
+BT /F1 10 Tf 72 336 Td (Note: handwriting partially illegible on) Tj ET
+BT /F1 10 Tf 72 320 Td (bearing spec - please confirm BB-6205) Tj ET
+BT /F1 10 Tf 72 304 Td (is correct part number.) Tj ET
+BT /F1 10 Tf 72 288 Td () Tj ET
+BT /F1 10 Tf 72 272 Td (- Ravi) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000001809 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1879
+%%EOF
