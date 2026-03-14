@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { Order } from "@/lib/types";
 import { QuotePanel, ResolvedItem } from "../QuotePanel";
-import { Check, Clock, Send, FileText, Download } from "lucide-react";
+import { Check, Clock, Send, Download } from "lucide-react";
 import type { DemoContext } from "../OrderWorkspace";
 
 interface Props {
@@ -243,16 +243,13 @@ function DraftQuoteEditor({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between border-b border-border pb-3">
-        <div className="flex items-center gap-2.5">
-          <FileText className="h-4 w-4 text-violet-600" />
-          <div>
-            <h3 className="text-[13px] font-semibold text-foreground">
-              Draft Quote — {qs.quoteNumber}
-            </h3>
-            <p className="text-[11px] text-muted-foreground">
-              Auto-generated from resolved line items — review before sending
-            </p>
-          </div>
+        <div>
+          <h3 className="text-[13px] font-semibold text-foreground">
+            Draft Quote — {qs.quoteNumber}
+          </h3>
+          <p className="text-[11px] text-muted-foreground">
+            Auto-generated from resolved line items — review before sending
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[11px] text-muted-foreground">Attach as</span>
@@ -401,9 +398,36 @@ function DraftQuoteEditor({
 
       <div className="border border-border bg-muted/10 px-4 py-3">
         <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground mb-2">Quote Email Preview</p>
-        <p className="mb-2 text-[11px] text-muted-foreground">
-          Attachment selected: <span className="font-mono text-foreground/80">{qs.quoteNumber}.{attachmentFormat}</span>
-        </p>
+
+        {attachmentFormat !== "txt" && (
+          <div className="mb-3 flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5 shadow-sm">
+            {/* File-type thumbnail */}
+            <div className="relative flex h-7 w-[22px] shrink-0 items-end overflow-hidden">
+              <svg viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-full w-full">
+                <path d="M0 2C0 0.895 0.895 0 2 0H20L32 12V38C32 39.105 31.105 40 30 40H2C0.895 40 0 39.105 0 38V2Z"
+                  className={attachmentFormat === "pdf" ? "fill-red-50 dark:fill-red-950/40" : "fill-emerald-50 dark:fill-emerald-950/40"} />
+                <path d="M20 0L32 12H22C20.895 12 20 11.105 20 10V0Z"
+                  className={attachmentFormat === "pdf" ? "fill-red-100 dark:fill-red-900/40" : "fill-emerald-100 dark:fill-emerald-900/40"} />
+                <path d="M0 2C0 0.895 0.895 0 2 0H20L32 12V38C32 39.105 31.105 40 30 40H2C0.895 40 0 39.105 0 38V2Z"
+                  className="stroke-border" strokeWidth="0.75" fill="none" />
+                <rect x="0" y="24" width="32" height="16" rx="0" ry="0"
+                  className={attachmentFormat === "pdf" ? "fill-red-600" : "fill-emerald-600"} />
+                <text x="16" y="35" textAnchor="middle" fill="white" fontSize="8" fontWeight="700" fontFamily="system-ui, sans-serif">
+                  {attachmentFormat.toUpperCase()}
+                </text>
+              </svg>
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-[12px] font-medium text-foreground">
+                {qs.quoteNumber}.{attachmentFormat}
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                {rows.length} items &middot; ${fmt(subtotal)}
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="mb-2">
           <label className="text-[11px] text-muted-foreground">
             Subject
@@ -420,6 +444,13 @@ function DraftQuoteEditor({
           onChange={(e) => setEmailBody(e.target.value)}
           className={EDITABLE_TEXTAREA_CLASS}
         />
+
+        {attachmentFormat === "txt" && (
+          <div className="mt-2 rounded-lg border border-border bg-card p-3 shadow-sm">
+            <p className="mb-2 text-[11px] font-medium text-muted-foreground">Quote table (inline)</p>
+            <pre className="overflow-x-auto whitespace-pre font-mono text-[10.5px] leading-[1.6] text-foreground/75">{buildTableText()}</pre>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-3">

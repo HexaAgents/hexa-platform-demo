@@ -3,20 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Order, Shipment, ShipmentEvent, ShipmentStatus } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
-import {
-  Truck,
-  Package,
-  ExternalLink,
-  Clock,
-  MapPin,
-  AlertTriangle,
-  Factory,
-  Warehouse,
-  Handshake,
-  PackageCheck,
-  PackageSearch,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type ShipmentWithEvents = {
@@ -29,16 +16,15 @@ type ShipmentLifecycleStage = {
   label: string;
   priority: number;
   eventStatus?: ShipmentStatus;
-  icon: LucideIcon;
 };
 
 const SHIPMENT_STAGES: ShipmentLifecycleStage[] = [
-  { id: "in_production",        label: "In Production",                 priority: 1, eventStatus: "shipment_created",  icon: Factory },
-  { id: "ready_for_collection", label: "Ready for Shipping Collection", priority: 2, eventStatus: "label_created",     icon: Warehouse },
-  { id: "picked_up",            label: "Carrier Pickup Confirmed",      priority: 3, eventStatus: "picked_up",         icon: Handshake },
-  { id: "in_transit",           label: "In Transit",                    priority: 4, eventStatus: "in_transit",         icon: Truck },
-  { id: "out_for_delivery",     label: "Out for Delivery",              priority: 5, eventStatus: "out_for_delivery",   icon: MapPin },
-  { id: "delivered",            label: "Delivered",                     priority: 6, eventStatus: "delivered",          icon: PackageCheck },
+  { id: "in_production",        label: "In Production",                 priority: 1, eventStatus: "shipment_created" },
+  { id: "ready_for_collection", label: "Ready for Shipping Collection", priority: 2, eventStatus: "label_created" },
+  { id: "picked_up",            label: "Carrier Pickup Confirmed",      priority: 3, eventStatus: "picked_up" },
+  { id: "in_transit",           label: "In Transit",                    priority: 4, eventStatus: "in_transit" },
+  { id: "out_for_delivery",     label: "Out for Delivery",              priority: 5, eventStatus: "out_for_delivery" },
+  { id: "delivered",            label: "Delivered",                     priority: 6, eventStatus: "delivered" },
 ];
 
 const STATUS_PRIORITY: Record<string, number> = {
@@ -108,7 +94,6 @@ function CurrentStepCard({ status, carrier, trackingNumber, eta }: {
   const stage = getCurrentStage(status);
   if (!stage) return null;
 
-  const StageIcon = stage.icon;
   const description = STAGE_DESCRIPTIONS[stage.id] ?? "";
   const stepNumber = SHIPMENT_STAGES.indexOf(stage) + 1;
   const totalSteps = SHIPMENT_STAGES.length;
@@ -117,41 +102,22 @@ function CurrentStepCard({ status, carrier, trackingNumber, eta }: {
   const badgeClass = isDelivered
     ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700"
     : "border-blue-500/30 bg-blue-500/10 text-blue-700";
-  const iconBg = isDelivered ? "bg-emerald-500/10" : "bg-blue-500/10";
-  const iconColor = isDelivered ? "text-emerald-600" : "text-blue-600";
 
   return (
-    <div className="flex items-start gap-4">
-      <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-full", iconBg)}>
-        <StageIcon className={cn("h-5 w-5", iconColor)} />
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-2">
+        <h4 className="text-[14px] font-semibold text-foreground">{stage.label}</h4>
+        <Badge variant="outline" className={cn("text-[10px] font-semibold", badgeClass)}>
+          {stepNumber}/{totalSteps}
+        </Badge>
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <h4 className="text-[14px] font-semibold text-foreground">{stage.label}</h4>
-          <Badge variant="outline" className={cn("text-[10px] font-semibold", badgeClass)}>
-            {stepNumber}/{totalSteps}
-          </Badge>
-        </div>
-        <p className="mt-1 text-[12px] text-muted-foreground">{description}</p>
-        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
-          {carrier && (
-            <span className="inline-flex items-center gap-1">
-              <Truck className="h-3 w-3" />
-              {carrier}
-            </span>
-          )}
-          {trackingNumber && (
-            <span className="inline-flex items-center gap-1 font-mono">
-              {trackingNumber}
-            </span>
-          )}
-          {eta && (
-            <span className="inline-flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              ETA {new Date(eta).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-            </span>
-          )}
-        </div>
+      <p className="mt-1 text-[12px] text-muted-foreground">{description}</p>
+      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+        {carrier && <span>{carrier}</span>}
+        {trackingNumber && <span className="font-mono">{trackingNumber}</span>}
+        {eta && (
+          <span>ETA {new Date(eta).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+        )}
       </div>
     </div>
   );
@@ -196,8 +162,7 @@ export default function ShipmentPanel({ order }: { order: Order }) {
   if (loading && !data) {
     return (
       <div className="border border-border bg-card p-6 shadow-sm">
-        <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
-          <Truck className="h-4 w-4" />
+        <div className="text-[12px] text-muted-foreground">
           Loading shipment data...
         </div>
       </div>
@@ -210,16 +175,11 @@ export default function ShipmentPanel({ order }: { order: Order }) {
     if (!summary) {
       return (
         <div className="border border-border bg-card p-6 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-              <Package className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div>
-              <h3 className="text-[14px] font-semibold text-foreground">Awaiting Shipment</h3>
-              <p className="text-[12px] text-muted-foreground">
-                Shipment tracking will appear here once the order is dispatched from the warehouse.
-              </p>
-            </div>
+          <div>
+            <h3 className="text-[14px] font-semibold text-foreground">Awaiting Shipment</h3>
+            <p className="text-[12px] text-muted-foreground">
+              Shipment tracking will appear here once the order is dispatched from the warehouse.
+            </p>
           </div>
         </div>
       );
@@ -258,17 +218,14 @@ export default function ShipmentPanel({ order }: { order: Order }) {
   return (
     <div className="border border-border bg-card shadow-sm">
       <div className="flex items-center justify-between gap-4 border-b border-border px-6 py-4">
-        <div className="flex items-center gap-3">
-          <PackageSearch className="h-5 w-5 text-foreground/70" />
-          <div>
-            <h3 className="text-[14px] font-semibold text-foreground">
-              Shipment Tracking
-            </h3>
-            <p className="mt-0.5 text-[12px] text-muted-foreground">
-              {CARRIER_LABELS[shipment.carrier] ?? shipment.carrier}
-              {shipment.carrierService ? ` — ${shipment.carrierService}` : ""}
-            </p>
-          </div>
+        <div>
+          <h3 className="text-[14px] font-semibold text-foreground">
+            Shipment Tracking
+          </h3>
+          <p className="mt-0.5 text-[12px] text-muted-foreground">
+            {CARRIER_LABELS[shipment.carrier] ?? shipment.carrier}
+            {shipment.carrierService ? ` — ${shipment.carrierService}` : ""}
+          </p>
         </div>
         <Badge
           variant="outline"
@@ -312,8 +269,7 @@ export default function ShipmentPanel({ order }: { order: Order }) {
             Estimated Delivery
           </p>
           {shipment.estimatedDelivery ? (
-            <p className="mt-1 flex items-center gap-1.5 text-[13px] font-medium text-foreground/85">
-              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+            <p className="mt-1 text-[13px] font-medium text-foreground/85">
               {new Date(shipment.estimatedDelivery).toLocaleDateString(
                 "en-US",
                 { weekday: "short", month: "short", day: "numeric", year: "numeric" }
@@ -339,11 +295,8 @@ export default function ShipmentPanel({ order }: { order: Order }) {
           <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
             Ship To
           </p>
-          <p className="mt-1 flex items-center gap-1.5 text-[13px] text-foreground/85">
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-            <span className="truncate">
-              {order.shipTo || order.customer.shippingAddress}
-            </span>
+          <p className="mt-1 text-[13px] text-foreground/85 truncate">
+            {order.shipTo || order.customer.shippingAddress}
           </p>
         </div>
       </div>
@@ -358,29 +311,26 @@ export default function ShipmentPanel({ order }: { order: Order }) {
 
         {(shipment.status === "exception" ||
           shipment.status === "delayed") && (
-          <div className="mt-4 flex items-start gap-2 border border-amber-500/30 bg-amber-500/5 px-4 py-3">
-            <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
-            <div>
-              <p className="text-[12px] font-medium text-amber-800">
-                {shipment.status === "exception"
-                  ? "Shipment Exception"
-                  : "Shipment Delayed"}
-              </p>
-              {sortedEvents
-                .filter(
-                  (e) =>
-                    e.status === "exception" || e.status === "delayed"
-                )
-                .slice(-1)
-                .map((e) => (
-                  <p
-                    key={e.id}
-                    className="mt-0.5 text-[11px] text-amber-700/80"
-                  >
-                    {e.message || `Status changed to ${prettyStatus(e.status)}`}
-                  </p>
-                ))}
-            </div>
+          <div className="mt-4 border border-amber-500/30 bg-amber-500/5 px-4 py-3">
+            <p className="text-[12px] font-medium text-amber-800">
+              {shipment.status === "exception"
+                ? "Shipment Exception"
+                : "Shipment Delayed"}
+            </p>
+            {sortedEvents
+              .filter(
+                (e) =>
+                  e.status === "exception" || e.status === "delayed"
+              )
+              .slice(-1)
+              .map((e) => (
+                <p
+                  key={e.id}
+                  className="mt-0.5 text-[11px] text-amber-700/80"
+                >
+                  {e.message || `Status changed to ${prettyStatus(e.status)}`}
+                </p>
+              ))}
           </div>
         )}
       </div>
