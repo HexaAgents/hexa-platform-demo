@@ -427,14 +427,14 @@ export const mockOrders: Order[] = [
     },
   },
 
-  // 4. Quote Sent — handwritten RFQ, quote already sent to customer
+  // 4. Quote Sent — RFQ, quote already sent to customer
   {
     id: "ord-demo-002",
     orderNumber: "ORD-2026-0049",
     stage: "quote_sent",
     source: "email",
     createdAt: "2026-03-13T08:55:00Z",
-    emailSubject: "Quick RFQ — handwritten shop-floor request",
+    emailSubject: "Quick RFQ — shop-floor request",
     customer: {
       id: "cust-demo-002",
       name: "Ravi Patel",
@@ -447,10 +447,10 @@ export const mockOrders: Order[] = [
     attachments: [
       {
         id: "att-demo-002",
-        fileName: "RFQ-Summit-Handwritten-Note.pdf",
-        mimeType: "application/pdf",
+        fileName: "RFQ-Summit-Note.png",
+        mimeType: "image/png",
         size: 2_998,
-        url: "/rfq-summit-handwritten.pdf",
+        url: "/rfq-summit-note.png",
       },
     ],
     lineItems: [
@@ -526,7 +526,7 @@ export const mockOrders: Order[] = [
     ],
     totalItems: 3,
     parseConfidence: 94,
-    ingestionSourceLabel: "Outlook - Handwritten RFQ",
+    ingestionSourceLabel: "Outlook - RFQ",
     demoFlow: {
       scenario: "rfq_handwritten",
       stage: "quote_prepared",
