@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Order, Shipment, ShipmentEvent, ShipmentStatus } from "@/lib/types";
+import type { Shipment, ShipmentEvent, ShipmentStatus } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import {
   Truck,
@@ -20,7 +20,7 @@ type ShipmentWithEvents = {
   events: ShipmentEvent[];
 };
 
-const SHIPMENT_STAGES: OrderStageEntry[] = [
+const SHIPMENT_STAGES: { status: ShipmentStatus; label: string }[] = [
   { status: "shipment_created", label: "Shipment Created" },
   { status: "label_created", label: "Label Created" },
   { status: "picked_up", label: "Picked Up" },
@@ -28,11 +28,6 @@ const SHIPMENT_STAGES: OrderStageEntry[] = [
   { status: "out_for_delivery", label: "Out for Delivery" },
   { status: "delivered", label: "Delivered" },
 ];
-
-type OrderStageEntry = {
-  status: ShipmentStatus;
-  label: string;
-};
 
 const STATUS_PRIORITY: Record<string, number> = {
   draft: 0,
@@ -78,41 +73,35 @@ const CARRIER_LABELS: Record<string, string> = {
   other: "Other",
 };
 
-export default function ShipmentPanel({ order }: { order: Order }) {
-  const [data, setData] = useState<ShipmentWithEvents | null>(null);
-  const [loading, setLoading] = useState(false);
+interface ProcurementShipmentPanelProps {
+  poId: string;
+  deliveryAddress: string;
+}
 
-  const showTrackingSection =
-    order.stage === "pushed_to_mrp" ||
-    order.stage === "shipped" ||
-    order.stage === "delivered";
+export default function ProcurementShipmentPanel({ poId, deliveryAddress }: ProcurementShipmentPanelProps) {
+  const [data, setData] = useState<ShipmentWithEvents | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const loadShipments = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/shipments?orderId=${order.id}&withEvents=true`,
+        `/api/shipments?poId=${poId}&withEvents=true`,
         { cache: "no-store" }
       );
       if (!res.ok) return;
-      const payload = (await res.json()) as {
-        shipments: ShipmentWithEvents[];
-      };
+      const payload = (await res.json()) as { shipments: ShipmentWithEvents[] };
       if (payload.shipments?.length > 0) {
         setData(payload.shipments[0]);
       }
     } finally {
       setLoading(false);
     }
-  }, [order.id]);
+  }, [poId]);
 
   useEffect(() => {
-    if (showTrackingSection) {
-      void loadShipments();
-    }
-  }, [loadShipments, showTrackingSection]);
-
-  if (!showTrackingSection) return null;
+    void loadShipments();
+  }, [loadShipments]);
 
   if (loading && !data) {
     return (
@@ -133,12 +122,9 @@ export default function ShipmentPanel({ order }: { order: Order }) {
             <Package className="h-5 w-5 text-muted-foreground" />
           </div>
           <div>
-            <h3 className="text-[14px] font-semibold text-foreground">
-              Awaiting Shipment
-            </h3>
+            <h3 className="text-[14px] font-semibold text-foreground">Awaiting Shipment</h3>
             <p className="text-[12px] text-muted-foreground">
-              Shipment tracking will appear here once the order is dispatched
-              from the warehouse.
+              Shipment tracking will appear here once the supplier dispatches the order.
             </p>
           </div>
         </div>
@@ -148,8 +134,7 @@ export default function ShipmentPanel({ order }: { order: Order }) {
 
   const { shipment, events } = data;
   const sortedEvents = [...events].sort(
-    (a, b) =>
-      new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
+    (a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
   );
   const currentPriority = STATUS_PRIORITY[shipment.status] ?? 0;
 
@@ -160,9 +145,7 @@ export default function ShipmentPanel({ order }: { order: Order }) {
     }
   }
 
-  const latestEtaEvent = [...sortedEvents]
-    .reverse()
-    .find((e) => e.estimatedDelivery);
+  const latestEtaEvent = [...sortedEvents].reverse().find((e) => e.estimatedDelivery);
 
   return (
     <div className="border border-border bg-card shadow-sm">
@@ -170,31 +153,21 @@ export default function ShipmentPanel({ order }: { order: Order }) {
         <div className="flex items-center gap-3">
           <Truck className="h-5 w-5 text-foreground/70" />
           <div>
-            <h3 className="text-[14px] font-semibold text-foreground">
-              Shipment Tracking
-            </h3>
+            <h3 className="text-[14px] font-semibold text-foreground">Shipment Tracking</h3>
             <p className="mt-0.5 text-[12px] text-muted-foreground">
               {CARRIER_LABELS[shipment.carrier] ?? shipment.carrier}
               {shipment.carrierService ? ` — ${shipment.carrierService}` : ""}
             </p>
           </div>
         </div>
-        <Badge
-          variant="outline"
-          className={cn(
-            "text-[10px] font-semibold",
-            statusBadgeClass[shipment.status]
-          )}
-        >
+        <Badge variant="outline" className={cn("text-[10px] font-semibold", statusBadgeClass[shipment.status])}>
           {prettyStatus(shipment.status)}
         </Badge>
       </div>
 
       <div className="grid grid-cols-1 gap-px border-b border-border bg-border md:grid-cols-3">
         <div className="bg-card px-6 py-3.5">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            Tracking Number
-          </p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Tracking Number</p>
           {shipment.trackingNumber ? (
             shipment.trackingUrl ? (
               <a
@@ -217,50 +190,35 @@ export default function ShipmentPanel({ order }: { order: Order }) {
         </div>
 
         <div className="bg-card px-6 py-3.5">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            Estimated Delivery
-          </p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Estimated Delivery</p>
           {shipment.estimatedDelivery ? (
             <p className="mt-1 flex items-center gap-1.5 text-[13px] font-medium text-foreground/85">
               <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-              {new Date(shipment.estimatedDelivery).toLocaleDateString(
-                "en-US",
-                { weekday: "short", month: "short", day: "numeric", year: "numeric" }
-              )}
+              {new Date(shipment.estimatedDelivery).toLocaleDateString("en-US", {
+                weekday: "short", month: "short", day: "numeric", year: "numeric",
+              })}
             </p>
           ) : (
             <p className="mt-1 text-[13px] text-muted-foreground">TBD</p>
           )}
-          {latestEtaEvent &&
-            latestEtaEvent.estimatedDelivery !==
-              shipment.estimatedDelivery && (
-              <p className="mt-0.5 text-[11px] text-amber-700">
-                Updated from{" "}
-                {new Date(latestEtaEvent.estimatedDelivery!).toLocaleDateString(
-                  "en-US",
-                  { month: "short", day: "numeric" }
-                )}
-              </p>
-            )}
+          {latestEtaEvent && latestEtaEvent.estimatedDelivery !== shipment.estimatedDelivery && (
+            <p className="mt-0.5 text-[11px] text-amber-700">
+              Updated from {new Date(latestEtaEvent.estimatedDelivery!).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+            </p>
+          )}
         </div>
 
         <div className="bg-card px-6 py-3.5">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            Ship To
-          </p>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Ship To</p>
           <p className="mt-1 flex items-center gap-1.5 text-[13px] text-foreground/85">
             <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-            <span className="truncate">
-              {order.shipTo || order.customer.shippingAddress}
-            </span>
+            <span className="truncate">{deliveryAddress}</span>
           </p>
         </div>
       </div>
 
       <div className="px-6 py-5">
-        <p className="mb-4 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-          Tracking Timeline
-        </p>
+        <p className="mb-4 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Tracking Timeline</p>
         <div className="space-y-0">
           {[...SHIPMENT_STAGES].reverse().map((stage, idx, arr) => {
             const stagePriority = STATUS_PRIORITY[stage.status] ?? 0;
@@ -284,90 +242,51 @@ export default function ShipmentPanel({ order }: { order: Order }) {
                     <Circle className="h-5 w-5 shrink-0 text-muted-foreground/30" />
                   )}
                   {!isLast && (
-                    <div
-                      className={cn(
-                        "my-1 w-px flex-1 min-h-[24px]",
-                        isCompleted ? "bg-emerald-400" : "bg-border"
-                      )}
-                    />
+                    <div className={cn("my-1 w-px flex-1 min-h-[24px]", isCompleted ? "bg-emerald-400" : "bg-border")} />
                   )}
                 </div>
                 <div className={cn("pb-5", isLast && "pb-0")}>
-                  <p
-                    className={cn(
-                      "text-[13px] font-medium leading-5",
-                      isPending
-                        ? "text-muted-foreground/50"
-                        : "text-foreground/85"
-                    )}
-                  >
+                  <p className={cn("text-[13px] font-medium leading-5", isPending ? "text-muted-foreground/50" : "text-foreground/85")}>
                     {stage.label}
                   </p>
                   {matchedEvent && (
                     <p className="mt-0.5 text-[11px] text-muted-foreground">
-                      {new Date(matchedEvent.occurredAt).toLocaleString(
-                        "en-US",
-                        {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
-                        }
-                      )}
+                      {new Date(matchedEvent.occurredAt).toLocaleString("en-US", {
+                        month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit",
+                      })}
                     </p>
                   )}
                   {matchedEvent?.message && (
-                    <p className="mt-0.5 text-[11px] text-muted-foreground/80">
-                      {matchedEvent.message}
+                    <p className="mt-0.5 text-[11px] text-muted-foreground/80">{matchedEvent.message}</p>
+                  )}
+                  {matchedEvent?.trackingNumber && stage.status === "label_created" && (
+                    <p className="mt-0.5 text-[11px] font-mono text-muted-foreground">
+                      Tracking: {matchedEvent.trackingNumber}
                     </p>
                   )}
-                  {matchedEvent?.trackingNumber &&
-                    stage.status === "label_created" && (
-                      <p className="mt-0.5 text-[11px] font-mono text-muted-foreground">
-                        Tracking: {matchedEvent.trackingNumber}
-                      </p>
-                    )}
-                  {matchedEvent?.estimatedDelivery &&
-                    stage.status === "in_transit" && (
-                      <p className="mt-0.5 text-[11px] text-muted-foreground">
-                        Est. delivery:{" "}
-                        {new Date(
-                          matchedEvent.estimatedDelivery
-                        ).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </p>
-                    )}
+                  {matchedEvent?.estimatedDelivery && stage.status === "in_transit" && (
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                      Est. delivery: {new Date(matchedEvent.estimatedDelivery).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    </p>
+                  )}
                 </div>
               </div>
             );
           })}
         </div>
 
-        {(shipment.status === "exception" ||
-          shipment.status === "delayed") && (
+        {(shipment.status === "exception" || shipment.status === "delayed") && (
           <div className="mt-4 flex items-start gap-2 border border-amber-500/30 bg-amber-500/5 px-4 py-3">
             <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
             <div>
               <p className="text-[12px] font-medium text-amber-800">
-                {shipment.status === "exception"
-                  ? "Shipment Exception"
-                  : "Shipment Delayed"}
+                {shipment.status === "exception" ? "Shipment Exception" : "Shipment Delayed"}
               </p>
               {sortedEvents
-                .filter(
-                  (e) =>
-                    e.status === "exception" || e.status === "delayed"
-                )
+                .filter((e) => e.status === "exception" || e.status === "delayed")
                 .slice(-1)
                 .map((e) => (
-                  <p
-                    key={e.id}
-                    className="mt-0.5 text-[11px] text-amber-700/80"
-                  >
+                  <p key={e.id} className="mt-0.5 text-[11px] text-amber-700/80">
                     {e.message || `Status changed to ${prettyStatus(e.status)}`}
                   </p>
                 ))}

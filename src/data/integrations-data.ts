@@ -858,7 +858,7 @@ const salesforce: IntegrationProvider = {
     { hexaField: "customer.email", providerField: "Contact.Email", status: "mapped" },
     { hexaField: "customer.billingAddress", providerField: "Account.BillingAddress", status: "mapped" },
     { hexaField: "customer.shippingAddress", providerField: "Account.ShippingAddress", status: "mapped" },
-    { hexaField: "order.status", providerField: "Opportunity.StageName", status: "custom" },
+    { hexaField: "order.stage", providerField: "Opportunity.StageName", status: "custom" },
   ],
   syncLogs: [
     { id: "sf1", timestamp: "2026-03-11T14:30:00Z", direction: "inbound", entityType: "Accounts", recordCount: 47, status: "success", duration: "1.8s" },

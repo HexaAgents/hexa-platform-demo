@@ -11,9 +11,6 @@ import {
 } from "@/components/ui/tooltip";
 import {
   getSupplierHistoriesForItem,
-  procurementItems,
-  getRecommendedProcurementAction,
-  isAutoErpMrpItem,
 } from "@/data/procurement-data";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +18,7 @@ interface SupplierComparisonTableProps {
   itemId: string;
   selectedSupplierIds: string[];
   onToggleSupplier: (supplierId: string) => void;
+  isReadOnly?: boolean;
 }
 
 const NOW = new Date("2026-03-09");
@@ -38,14 +36,9 @@ export default function SupplierComparisonTable({
   itemId,
   selectedSupplierIds,
   onToggleSupplier,
+  isReadOnly = false,
 }: SupplierComparisonTableProps) {
   const histories = useMemo(() => getSupplierHistoriesForItem(itemId), [itemId]);
-  const item = useMemo(() => procurementItems.find((entry) => entry.id === itemId) ?? null, [itemId]);
-  const recommendedAction = useMemo(
-    () => (item ? getRecommendedProcurementAction(item) : null),
-    [item]
-  );
-  const isAuto = useMemo(() => (item ? isAutoErpMrpItem(item) : false), [item]);
   const recommended = useMemo(() => {
     if (histories.length === 0) return null;
     return [...histories].sort((a, b) => b.reliabilityScore - a.reliabilityScore)[0];
@@ -57,11 +50,6 @@ export default function SupplierComparisonTable({
         <h4 className="mb-4 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
           Supplier Comparison
         </h4>
-        {isAuto && recommendedAction === "rfq" && (
-          <div className="mb-4 border border-violet-500/25 bg-violet-500/5 px-3 py-2 text-[12px] text-violet-700">
-            ERP/MRP auto-routing: no supplier history found. Start with RFQ to a new supplier.
-          </div>
-        )}
         <div className="flex flex-col items-center gap-2 py-6 text-muted-foreground">
           <p className="text-[13px] font-medium">No supplier history</p>
           <button className="inline-flex items-center gap-1.5 border border-border px-3 py-1.5 text-[12px] text-muted-foreground hover:bg-accent/60 hover:text-foreground transition-colors">
@@ -91,7 +79,7 @@ export default function SupplierComparisonTable({
           <table className="w-full text-[12px]">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="w-8 px-3 py-2.5" />
+                {!isReadOnly && <th className="w-8 px-3 py-2.5" />}
                 <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                   Supplier
                 </th>
@@ -134,26 +122,28 @@ export default function SupplierComparisonTable({
                 return (
                   <tr
                     key={h.id}
-                    onClick={() => onToggleSupplier(h.supplierId)}
+                    onClick={isReadOnly ? undefined : () => onToggleSupplier(h.supplierId)}
                     className={cn(
-                      "cursor-pointer border-b border-border transition-colors last:border-b-0",
-                      selected
-                        ? "bg-primary/5"
-                        : "hover:bg-accent/40"
+                      "border-b border-border transition-colors last:border-b-0",
+                      isReadOnly
+                        ? selected ? "bg-primary/5" : ""
+                        : cn("cursor-pointer", selected ? "bg-primary/5" : "hover:bg-accent/40")
                     )}
                   >
-                    <td className="px-3 py-3">
-                      <div
-                        className={cn(
-                          "flex h-4 w-4 items-center justify-center border transition-colors",
-                          selected
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border bg-card"
-                        )}
-                      >
-                        {selected && <Check className="h-3 w-3" />}
-                      </div>
-                    </td>
+                    {!isReadOnly && (
+                      <td className="px-3 py-3">
+                        <div
+                          className={cn(
+                            "flex h-4 w-4 items-center justify-center border transition-colors",
+                            selected
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border bg-card"
+                          )}
+                        >
+                          {selected && <Check className="h-3 w-3" />}
+                        </div>
+                      </td>
+                    )}
                     <td className="px-3 py-3">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-foreground/85">{h.supplier.name}</span>

@@ -10,8 +10,6 @@ import {
   procurementItems,
   getDaysOfStockRemaining,
   getStockColor,
-  getRecommendedProcurementAction,
-  isAutoErpMrpItem,
 } from "@/data/procurement-data";
 import type { ProcurementItem, ProcurementStatus, ProcurementPriority } from "@/lib/procurement-types";
 import ItemDetailPanel from "./ItemDetailPanel";
@@ -21,18 +19,20 @@ import { cn } from "@/lib/utils";
 
 const statusLabels: Record<ProcurementStatus, string> = {
   flagged: "Flagged",
-  under_review: "Under Review",
-  rfq_drafted: "RFQ Drafted",
   rfq_sent: "RFQ Sent",
-  po_raised: "PO Raised",
+  quotes_received: "Quotes In",
+  po_sent: "PO Sent",
+  shipped: "Shipped",
+  delivered: "Delivered",
 };
 
 const statusBadgeClass: Record<ProcurementStatus, string> = {
   flagged: "border-amber-500/30 bg-amber-500/10 text-amber-700",
-  under_review: "border-amber-500/30 bg-amber-500/10 text-amber-700",
-  rfq_drafted: "border-border bg-muted/50 text-foreground/70",
-  rfq_sent: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600",
-  po_raised: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600",
+  rfq_sent: "border-blue-500/30 bg-blue-500/10 text-blue-700",
+  quotes_received: "border-violet-500/30 bg-violet-500/10 text-violet-700",
+  po_sent: "border-indigo-500/30 bg-indigo-500/10 text-indigo-700",
+  shipped: "border-blue-500/30 bg-blue-500/10 text-blue-700",
+  delivered: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700",
 };
 
 const priorityLabels: Record<ProcurementPriority, string> = {
@@ -49,11 +49,6 @@ const priorityBadgeClass: Record<ProcurementPriority, string> = {
   low: "border-border bg-muted/50 text-muted-foreground",
 };
 
-const actionBadgeClass = {
-  po: "border-blue-500/30 bg-blue-500/10 text-blue-700",
-  rfq: "border-violet-500/30 bg-violet-500/10 text-violet-700",
-};
-
 export default function ProcurementQueue() {
   const [search, setSearch] = useState("");
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -62,7 +57,7 @@ export default function ProcurementQueue() {
 
   // TODO: Replace with real API call
   const [items] = useState<ProcurementItem[]>(() => {
-    const ids = ["pi-001", "pi-013", "pi-004", "pi-007", "pi-008", "pi-003"];
+    const ids = ["pi-001", "pi-014", "pi-013", "pi-004", "pi-011", "pi-007", "pi-008", "pi-006"];
     return ids.map((id) => procurementItems.find((i) => i.id === id)!).filter(Boolean);
   });
 
@@ -78,7 +73,7 @@ export default function ProcurementQueue() {
   }, [items, search]);
 
   const needAttentionCount = items.filter(
-    (i) => i.status === "flagged" || i.status === "under_review"
+    (i) => i.status === "flagged" || i.status === "quotes_received"
   ).length;
 
   const selectedItem = selectedItemId ? items.find((i) => i.id === selectedItemId) ?? null : null;
@@ -171,8 +166,6 @@ export default function ProcurementQueue() {
               const days = getDaysOfStockRemaining(item);
               const daysColor = getStockColor(days);
               const isEngineering = item.source === "engineering_request";
-              const isAuto = isAutoErpMrpItem(item);
-              const recommendation = getRecommendedProcurementAction(item);
               const Icon = isEngineering ? Wrench : Package;
 
               return (
@@ -204,25 +197,6 @@ export default function ProcurementQueue() {
                           ? "ERP Flag"
                           : `Suggested by ${item.requestedBy}`}
                       </p>
-                      {isAuto && recommendation && (
-                        <div className="mt-1 flex flex-wrap items-center gap-1">
-                          <Badge
-                            variant="outline"
-                            className="border-border bg-muted/30 px-1.5 py-0 text-[10px] uppercase tracking-wide text-foreground/70"
-                          >
-                            Auto ERP/MRP
-                          </Badge>
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "px-1.5 py-0 text-[10px] uppercase tracking-wide",
-                              actionBadgeClass[recommendation]
-                            )}
-                          >
-                            {recommendation === "po" ? "Auto PO" : "Auto RFQ"}
-                          </Badge>
-                        </div>
-                      )}
                     </div>
 
                     <div className="w-28 flex justify-center">

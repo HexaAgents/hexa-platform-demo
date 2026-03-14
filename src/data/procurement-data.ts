@@ -1,6 +1,5 @@
 import type {
   ProcurementItem,
-  ProcurementRecommendedAction,
   Supplier,
   SupplierItemHistory,
   CoOrderPattern,
@@ -9,6 +8,9 @@ import type {
   StockHistoryPoint,
   ERPScanConfig,
   OpenPO,
+  SupplierQuote,
+  PurchaseOrder,
+  RFQSupplierEntry,
 } from "@/lib/procurement-types";
 
 function generateStockHistory(currentStock: number, avgDaily: number, days: number): StockHistoryPoint[] {
@@ -135,14 +137,14 @@ export const procurementItems: ProcurementItem[] = [
     attachments: [],
     preferredSupplierId: "sup-001",
     stockHistory: generateStockHistory(12, 3.2, 90),
-  },
+  },  // flagged — single preferred supplier
   {
     id: "pi-002",
     sku: "BRG-6205-2RS",
     name: "6205-2RS Sealed Ball Bearing",
     description: "Deep groove ball bearing, 25mm bore, 52mm OD, 15mm width. Double rubber sealed. For conveyor rollers and motor assemblies.",
     source: "erp_alert",
-    status: "under_review",
+    status: "flagged",
     priority: "high",
     currentStock: 45,
     reorderPoint: 40,
@@ -163,7 +165,7 @@ export const procurementItems: ProcurementItem[] = [
     name: "Viton O-Ring Seal 75A Durometer",
     description: "Fluoroelastomer (Viton) O-ring, 75A Shore durometer, 2-inch ID x 2.25-inch OD. Chemical resistant, rated to 400°F.",
     source: "erp_alert",
-    status: "rfq_drafted",
+    status: "flagged",
     priority: "medium",
     currentStock: 320,
     reorderPoint: 200,
@@ -171,20 +173,20 @@ export const procurementItems: ProcurementItem[] = [
     avgDailyConsumption: 18,
     avgDailyConsumption30d: 22,
     avgDailyConsumption90d: 18,
-    flaggedAt: "2026-03-05T11:30:00Z",
+    flaggedAt: "2026-03-10T11:30:00Z",
     requestedBy: "System (ERP Scan)",
     category: "consumable",
     attachments: [],
     preferredSupplierId: "sup-003",
     stockHistory: generateStockHistory(320, 18, 90),
-  },
+  },  // flagged — multiple suppliers, needs choice
   {
     id: "pi-004",
     sku: "FST-HX-M10x30-GR8",
     name: "M10x30mm Hex Bolt Grade 8.8",
     description: "Metric hex head bolt, M10 thread, 30mm length, Grade 8.8 zinc plated. General assembly fastener.",
     source: "erp_alert",
-    status: "flagged",
+    status: "quotes_received",
     priority: "high",
     currentStock: 850,
     reorderPoint: 1000,
@@ -192,13 +194,14 @@ export const procurementItems: ProcurementItem[] = [
     avgDailyConsumption: 95,
     avgDailyConsumption30d: 110,
     avgDailyConsumption90d: 95,
-    flaggedAt: "2026-03-08T16:45:00Z",
+    flaggedAt: "2026-03-06T16:45:00Z",
     requestedBy: "System (ERP Scan)",
     category: "consumable",
     attachments: [],
     preferredSupplierId: "sup-002",
     stockHistory: generateStockHistory(850, 95, 90),
-  },
+    activeRfqId: "rfq-004",
+  },  // quotes_received — supplier quotes in, needs evaluation
   {
     id: "pi-005",
     sku: "CU-TUBE-12-TYPE-L",
@@ -226,7 +229,7 @@ export const procurementItems: ProcurementItem[] = [
     name: '4.5" Flap Disc 80-Grit Zirconia',
     description: "4.5-inch zirconia alumina flap disc, 80-grit, Type 29 conical. 7/8-inch arbor. For weld blending and surface prep.",
     source: "erp_alert",
-    status: "po_raised",
+    status: "delivered",
     priority: "medium",
     currentStock: 180,
     reorderPoint: 100,
@@ -240,6 +243,9 @@ export const procurementItems: ProcurementItem[] = [
     attachments: [],
     preferredSupplierId: "sup-008",
     stockHistory: generateStockHistory(180, 12, 90),
+    activeRfqId: "rfq-006",
+    selectedQuoteId: "sq-006-a",
+    purchaseOrderId: "pur-006",
   },
   {
     id: "pi-007",
@@ -247,7 +253,7 @@ export const procurementItems: ProcurementItem[] = [
     name: "Custom Mounting Bracket Assembly",
     description: "Custom-designed mounting bracket for the new Series 7 conveyor module. Requires CNC machining from 6061-T6 aluminum.",
     source: "engineering_request",
-    status: "flagged",
+    status: "po_sent",
     priority: "high",
     currentStock: 0,
     reorderPoint: 0,
@@ -255,7 +261,7 @@ export const procurementItems: ProcurementItem[] = [
     avgDailyConsumption: 0,
     avgDailyConsumption30d: 0,
     avgDailyConsumption90d: 0,
-    flaggedAt: "2026-03-08T10:30:00Z",
+    flaggedAt: "2026-03-02T10:30:00Z",
     requestedBy: "Tom Nakamura",
     category: "custom_part",
     technicalSpecs: {
@@ -272,14 +278,15 @@ export const procurementItems: ProcurementItem[] = [
     ],
     preferredSupplierId: "sup-004",
     stockHistory: [],
-  },
+    purchaseOrderId: "pur-001",
+  },  // po_sent — awaiting supplier shipment
   {
     id: "pi-008",
     sku: "ENG-REQ-2026-002",
     name: "Hardened Steel Drive Shaft",
     description: "Custom drive shaft for upgraded press assembly. Through-hardened 4140 steel, precision ground journals.",
     source: "engineering_request",
-    status: "under_review",
+    status: "shipped",
     priority: "critical",
     currentStock: 0,
     reorderPoint: 0,
@@ -287,7 +294,7 @@ export const procurementItems: ProcurementItem[] = [
     avgDailyConsumption: 0,
     avgDailyConsumption30d: 0,
     avgDailyConsumption90d: 0,
-    flaggedAt: "2026-03-06T15:20:00Z",
+    flaggedAt: "2026-02-20T15:20:00Z",
     requestedBy: "Rachel Kim",
     category: "custom_part",
     technicalSpecs: {
@@ -304,7 +311,8 @@ export const procurementItems: ProcurementItem[] = [
     ],
     preferredSupplierId: "sup-004",
     stockHistory: [],
-  },
+    purchaseOrderId: "pur-002",
+  },  // shipped — in transit, tracking active
   {
     id: "pi-009",
     sku: "ALM-6061-BAR-1.5",
@@ -361,7 +369,7 @@ export const procurementItems: ProcurementItem[] = [
     name: "EP2 Lithium Complex Grease Cartridge",
     description: "NLGI Grade 2 extreme pressure lithium complex grease, 14oz cartridge. For all bearing and chassis lubrication.",
     source: "erp_alert",
-    status: "under_review",
+    status: "po_sent",
     priority: "low",
     currentStock: 48,
     reorderPoint: 24,
@@ -375,6 +383,7 @@ export const procurementItems: ProcurementItem[] = [
     attachments: [],
     preferredSupplierId: "sup-005",
     stockHistory: generateStockHistory(48, 2.1, 90),
+    purchaseOrderId: "pur-011",
   },
   {
     id: "pi-012",
@@ -401,9 +410,9 @@ export const procurementItems: ProcurementItem[] = [
     id: "pi-013",
     sku: "CTG-MTR-12AWG-500",
     name: "12 AWG Control Cable (500ft spool)",
-    description: "Multi-conductor 12 AWG control cable for panel rewiring and automation retrofits. Triggered from ERP MRP demand spike.",
+    description: "Multi-conductor 12 AWG control cable for panel rewiring and automation retrofits.",
     source: "erp_alert",
-    status: "flagged",
+    status: "rfq_sent",
     priority: "high",
     currentStock: 2,
     reorderPoint: 8,
@@ -417,9 +426,28 @@ export const procurementItems: ProcurementItem[] = [
     attachments: [],
     preferredSupplierId: "sup-005",
     stockHistory: generateStockHistory(2, 1.1, 90),
-    isAutomated: true,
-    automationSource: "erp_mrp",
-    routingReason: "No supplier history found for this ERP/MRP signal; route to new-supplier RFQ.",
+    activeRfqId: "rfq-003",
+  },  // rfq_sent — waiting for supplier quotes
+  {
+    id: "pi-014",
+    sku: "HYD-FLT-10M-SS",
+    name: "10-Micron Hydraulic Filter Element (SS Mesh)",
+    description: "Stainless steel mesh hydraulic filter element, 10-micron rating, for high-pressure hydraulic systems. Replaces disposable cellulose elements on Press Lines 1-4.",
+    source: "erp_alert",
+    status: "flagged",
+    priority: "high",
+    currentStock: 4,
+    reorderPoint: 8,
+    maxStock: 40,
+    avgDailyConsumption: 0.8,
+    avgDailyConsumption30d: 1.1,
+    avgDailyConsumption90d: 0.8,
+    flaggedAt: "2026-03-10T07:00:00Z",
+    requestedBy: "System (ERP Scan)",
+    category: "consumable",
+    attachments: [],
+    preferredSupplierId: "sup-003",
+    stockHistory: generateStockHistory(4, 0.8, 90),
   },
 ];
 
@@ -469,6 +497,11 @@ export const supplierItemHistories: SupplierItemHistory[] = [
   // pi-012: Welding Wire — suppliers
   { id: "sih-019", supplierId: "sup-005", itemId: "pi-012", lastOrderDate: "2026-02-18", totalOrders12mo: 10, avgUnitPrice: 52.00, lastUnitPrice: 54.00, previousUnitPrice: 51.00, avgLeadTimeDays: 4, onTimeDeliveryRate: 95, defectRate: 0.1, reliabilityScore: 95, moq: 5, paymentTerms: "Net 30", notes: "Good Lincoln & Hobart stock." },
   { id: "sih-020", supplierId: "sup-002", itemId: "pi-012", lastOrderDate: "2025-12-01", totalOrders12mo: 3, avgUnitPrice: 49.50, lastUnitPrice: 50.00, previousUnitPrice: 49.00, avgLeadTimeDays: 6, onTimeDeliveryRate: 88, defectRate: 0.5, reliabilityScore: 84, moq: 10, paymentTerms: "Net 45", notes: "Slightly cheaper but less reliable shipping." },
+
+  // pi-014: Hydraulic Filter — suppliers
+  { id: "sih-021", supplierId: "sup-003", itemId: "pi-014", lastOrderDate: "2026-01-22", totalOrders12mo: 6, avgUnitPrice: 145.00, lastUnitPrice: 148.00, previousUnitPrice: 142.00, avgLeadTimeDays: 8, onTimeDeliveryRate: 96, defectRate: 0.5, reliabilityScore: 93, moq: 4, paymentTerms: "Net 30", notes: "Primary source for hydraulic filtration. Consistent quality, stocks SS mesh elements." },
+  { id: "sih-022", supplierId: "sup-005", itemId: "pi-014", lastOrderDate: "2025-10-15", totalOrders12mo: 2, avgUnitPrice: 158.00, lastUnitPrice: 162.00, previousUnitPrice: 155.00, avgLeadTimeDays: 12, onTimeDeliveryRate: 85, defectRate: 2.0, reliabilityScore: 70, moq: 2, paymentTerms: "Net 30", notes: "Generic replacement element. Lower MOQ but higher defect rate." },
+  { id: "sih-023", supplierId: "sup-001", itemId: "pi-014", lastOrderDate: "2025-08-01", totalOrders12mo: 1, avgUnitPrice: 165.00, lastUnitPrice: 165.00, previousUnitPrice: 165.00, avgLeadTimeDays: 15, onTimeDeliveryRate: 90, defectRate: 1.0, reliabilityScore: 76, moq: 5, paymentTerms: "Net 30", notes: "Can source through distribution network. Longer lead time." },
 ];
 
 // --- Co-Order Patterns ---
@@ -486,6 +519,8 @@ export const coOrderPatterns: CoOrderPattern[] = [
   { id: "cop-010", itemId: "pi-003", coItemId: "pi-011", coOrderFrequencyPct: 45 },
   { id: "cop-011", itemId: "pi-006", coItemId: "pi-012", coOrderFrequencyPct: 88 },
   { id: "cop-012", itemId: "pi-011", coItemId: "pi-002", coOrderFrequencyPct: 82 },
+  { id: "cop-013", itemId: "pi-014", coItemId: "pi-003", coOrderFrequencyPct: 68 },
+  { id: "cop-014", itemId: "pi-014", coItemId: "pi-011", coOrderFrequencyPct: 52 },
 ];
 
 // --- Engineering Requests ---
@@ -597,6 +632,205 @@ export const draftRFQs: DraftRFQ[] = [
     validityDays: 14,
     notes: "",
   },
+  {
+    id: "rfq-003",
+    itemId: "pi-013",
+    supplierIds: ["sup-005", "sup-002"],
+    quantity: 20,
+    deliveryDate: "2026-03-25",
+    specs: {},
+    attachments: [],
+    status: "sent",
+    createdAt: "2026-03-09T13:00:00Z",
+    sentAt: "2026-03-09T14:00:00Z",
+    buyerCompany: "Hexa Manufacturing Co.",
+    buyerContact: "James Morrison",
+    buyerEmail: "procurement@hexamfg.com",
+    deliveryAddress: "1500 Factory Lane, Dock 4, Milwaukee, WI 53201",
+    paymentTermsPreference: "Net 30",
+    validityDays: 14,
+    notes: "Urgent — current stock critically low.",
+  },
+  {
+    id: "rfq-006",
+    itemId: "pi-006",
+    supplierIds: ["sup-008", "sup-005"],
+    quantity: 500,
+    deliveryDate: "2026-03-08",
+    specs: {},
+    attachments: [],
+    status: "sent",
+    createdAt: "2026-02-25T11:00:00Z",
+    sentAt: "2026-02-25T14:00:00Z",
+    buyerCompany: "Hexa Manufacturing Co.",
+    buyerContact: "James Morrison",
+    buyerEmail: "procurement@hexamfg.com",
+    deliveryAddress: "1500 Factory Lane, Dock 4, Milwaukee, WI 53201",
+    paymentTermsPreference: "Net 45",
+    validityDays: 14,
+    notes: "Urgent restock — consumption rate increasing due to expanded weld-prep schedule.",
+  },
+  {
+    id: "rfq-004",
+    itemId: "pi-004",
+    supplierIds: ["sup-002", "sup-005"],
+    quantity: 10000,
+    deliveryDate: "2026-03-20",
+    specs: {},
+    attachments: [],
+    status: "sent",
+    createdAt: "2026-03-06T18:00:00Z",
+    sentAt: "2026-03-07T10:00:00Z",
+    buyerCompany: "Hexa Manufacturing Co.",
+    buyerContact: "James Morrison",
+    buyerEmail: "procurement@hexamfg.com",
+    deliveryAddress: "1500 Factory Lane, Dock 4, Milwaukee, WI 53201",
+    paymentTermsPreference: "Net 45",
+    validityDays: 14,
+    notes: "",
+  },
+];
+
+// --- RFQ Supplier Entries (tracking per-supplier RFQ status) ---
+
+export const rfqSupplierEntries: Record<string, RFQSupplierEntry[]> = {
+  "rfq-006": [
+    { supplierId: "sup-008", sentAt: "2026-02-25T14:00:00Z", responseStatus: "quote_received", quoteId: "sq-006-a" },
+    { supplierId: "sup-005", sentAt: "2026-02-25T14:00:00Z", responseStatus: "quote_received", quoteId: "sq-006-b" },
+  ],
+  "rfq-003": [
+    { supplierId: "sup-005", sentAt: "2026-03-09T14:00:00Z", responseStatus: "no_response" },
+    { supplierId: "sup-002", sentAt: "2026-03-09T14:00:00Z", responseStatus: "no_response" },
+  ],
+  "rfq-004": [
+    { supplierId: "sup-002", sentAt: "2026-03-07T10:00:00Z", responseStatus: "quote_received", quoteId: "sq-001" },
+    { supplierId: "sup-005", sentAt: "2026-03-07T10:00:00Z", responseStatus: "quote_received", quoteId: "sq-002" },
+  ],
+};
+
+// --- Supplier Quotes ---
+
+export const supplierQuotes: SupplierQuote[] = [
+  {
+    id: "sq-006-a",
+    rfqId: "rfq-006",
+    supplierId: "sup-008",
+    unitPrice: 3.15,
+    totalPrice: 1575,
+    leadTimeDays: 3,
+    moq: 50,
+    paymentTerms: "Net 45",
+    deliveryTerms: "FOB Origin",
+    validUntil: "2026-03-11",
+    receivedAt: "2026-02-26T10:30:00Z",
+    notes: "Full stock available. Can ship same day on PO receipt.",
+  },
+  {
+    id: "sq-006-b",
+    rfqId: "rfq-006",
+    supplierId: "sup-005",
+    unitPrice: 3.45,
+    totalPrice: 1725,
+    leadTimeDays: 5,
+    moq: 25,
+    paymentTerms: "Net 30",
+    deliveryTerms: "Delivered",
+    validUntil: "2026-03-11",
+    receivedAt: "2026-02-27T09:00:00Z",
+    notes: "Lower MOQ, delivered pricing. Slightly higher unit cost.",
+  },
+  {
+    id: "sq-001",
+    rfqId: "rfq-004",
+    supplierId: "sup-002",
+    unitPrice: 0.11,
+    totalPrice: 1100,
+    leadTimeDays: 4,
+    moq: 5000,
+    paymentTerms: "Net 45",
+    deliveryTerms: "FOB Origin",
+    validUntil: "2026-03-21",
+    receivedAt: "2026-03-08T16:30:00Z",
+    notes: "In stock, can ship within 2 business days of PO.",
+  },
+  {
+    id: "sq-002",
+    rfqId: "rfq-004",
+    supplierId: "sup-005",
+    unitPrice: 0.14,
+    totalPrice: 1400,
+    leadTimeDays: 3,
+    moq: 1000,
+    paymentTerms: "Net 30",
+    deliveryTerms: "Delivered",
+    validUntil: "2026-03-21",
+    receivedAt: "2026-03-09T09:15:00Z",
+    notes: "Faster delivery, lower MOQ. Delivered pricing includes freight.",
+  },
+];
+
+// --- Purchase Orders ---
+
+export const purchaseOrders: PurchaseOrder[] = [
+  {
+    id: "pur-006",
+    itemId: "pi-006",
+    supplierId: "sup-008",
+    quoteId: "sq-006-a",
+    quantity: 500,
+    unitPrice: 3.15,
+    totalPrice: 1575,
+    paymentTerms: "Net 45",
+    deliveryAddress: "1500 Factory Lane, Dock 4, Milwaukee, WI 53201",
+    expectedDelivery: "2026-03-04",
+    status: "sent",
+    createdAt: "2026-02-27T14:00:00Z",
+    sentAt: "2026-02-27T16:00:00Z",
+    shipmentId: "shp-proc-006",
+  },
+  {
+    id: "pur-011",
+    itemId: "pi-011",
+    supplierId: "sup-005",
+    quantity: 152,
+    unitPrice: 6.95,
+    totalPrice: 1056.40,
+    paymentTerms: "Net 30",
+    deliveryAddress: "1500 Factory Lane, Dock 4, Milwaukee, WI 53201",
+    expectedDelivery: "2026-03-17",
+    status: "sent",
+    createdAt: "2026-03-10T09:00:00Z",
+    sentAt: "2026-03-10T09:15:00Z",
+  },
+  {
+    id: "pur-001",
+    itemId: "pi-007",
+    supplierId: "sup-004",
+    quantity: 50,
+    unitPrice: 72.00,
+    totalPrice: 3600,
+    paymentTerms: "Net 60",
+    deliveryAddress: "1500 Factory Lane, Dock 4, Milwaukee, WI 53201",
+    expectedDelivery: "2026-03-22",
+    status: "sent",
+    createdAt: "2026-03-04T10:00:00Z",
+    sentAt: "2026-03-04T14:30:00Z",
+  },
+  {
+    id: "pur-002",
+    itemId: "pi-008",
+    supplierId: "sup-004",
+    quantity: 5,
+    unitPrice: 355.00,
+    totalPrice: 1775,
+    paymentTerms: "Net 60",
+    deliveryAddress: "1500 Factory Lane, Dock 4, Milwaukee, WI 53201",
+    expectedDelivery: "2026-03-18",
+    status: "sent",
+    createdAt: "2026-02-24T09:00:00Z",
+    sentAt: "2026-02-24T11:00:00Z",
+    shipmentId: "shp-proc-001",
+  },
 ];
 
 // --- Open POs ---
@@ -669,8 +903,8 @@ export function getEngineeringRequest(itemId: string): EngineeringRequest | unde
   return engineeringRequests.find((r) => r.itemId === itemId);
 }
 
-export function getDraftRFQ(itemId: string): DraftRFQ | undefined {
-  return draftRFQs.find((r) => r.itemId === itemId);
+export function getDraftRFQ(rfqId: string): DraftRFQ | undefined {
+  return draftRFQs.find((r) => r.id === rfqId);
 }
 
 export function getDaysOfStockRemaining(item: ProcurementItem): number {
@@ -686,7 +920,7 @@ export function getStockColor(days: number): "red" | "amber" | "green" {
 
 export function getItemsForSameSupplier(itemId: string, supplierId: string): ProcurementItem[] {
   return procurementItems.filter(
-    (i) => i.id !== itemId && i.preferredSupplierId === supplierId && (i.status === "flagged" || i.status === "under_review")
+    (i) => i.id !== itemId && i.preferredSupplierId === supplierId && i.status === "flagged"
   );
 }
 
@@ -703,25 +937,40 @@ export function getBestLeadTime(itemId: string): number {
   return Math.min(...histories.map((h) => h.avgLeadTimeDays));
 }
 
-export function isAutoErpMrpItem(item: ProcurementItem): boolean {
-  return item.source === "erp_alert" && (item.isAutomated ?? true);
-}
-
 export function hasSupplierHistory(itemId: string): boolean {
   return supplierItemHistories.some((h) => h.itemId === itemId);
 }
 
-export function getRecommendedProcurementAction(
-  item: ProcurementItem
-): ProcurementRecommendedAction | null {
-  if (!isAutoErpMrpItem(item)) return null;
-  return hasSupplierHistory(item.id) ? "po" : "rfq";
+export function getRFQSupplierEntries(rfqId: string): (RFQSupplierEntry & { supplier: Supplier })[] {
+  const entries = rfqSupplierEntries[rfqId] ?? [];
+  return entries
+    .map((e) => ({ ...e, supplier: suppliers.find((s) => s.id === e.supplierId)! }))
+    .filter((e) => e.supplier);
 }
 
-export function getProcurementRoutingReason(item: ProcurementItem): string | null {
-  if (!isAutoErpMrpItem(item)) return null;
-  if (!hasSupplierHistory(item.id)) {
-    return "No supplier history for this ERP/MRP demand signal, so start with a new-supplier RFQ.";
-  }
-  return "Supplier history exists for this ERP/MRP demand signal, so default to a purchase order.";
+export function getQuotesForRFQ(rfqId: string): (SupplierQuote & { supplier: Supplier })[] {
+  return supplierQuotes
+    .filter((q) => q.rfqId === rfqId)
+    .map((q) => ({ ...q, supplier: suppliers.find((s) => s.id === q.supplierId)! }))
+    .filter((q) => q.supplier);
+}
+
+export function getPurchaseOrder(poId: string): (PurchaseOrder & { supplier: Supplier }) | undefined {
+  const po = purchaseOrders.find((p) => p.id === poId);
+  if (!po) return undefined;
+  const supplier = suppliers.find((s) => s.id === po.supplierId);
+  if (!supplier) return undefined;
+  return { ...po, supplier };
+}
+
+export function getDraftRFQForItem(itemId: string): DraftRFQ | undefined {
+  return draftRFQs.find((r) => r.itemId === itemId);
+}
+
+export function getQuoteById(quoteId: string): (SupplierQuote & { supplier: Supplier }) | undefined {
+  const q = supplierQuotes.find((sq) => sq.id === quoteId);
+  if (!q) return undefined;
+  const supplier = suppliers.find((s) => s.id === q.supplierId);
+  if (!supplier) return undefined;
+  return { ...q, supplier };
 }

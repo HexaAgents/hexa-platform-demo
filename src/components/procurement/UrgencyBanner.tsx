@@ -10,8 +10,6 @@ import {
   getBestLeadTime,
   getOpenPOsForItem,
   getEngineeringRequest,
-  isAutoErpMrpItem,
-  getRecommendedProcurementAction,
 } from "@/data/procurement-data";
 
 type RiskLevel = "stockout" | "low_buffer" | "ok";
@@ -48,8 +46,6 @@ const bannerBg: Record<RiskLevel, string> = {
 
 export default function UrgencyBanner({ item }: { item: ProcurementItem }) {
   const isEngineering = item.source === "engineering_request";
-  const isAuto = isAutoErpMrpItem(item);
-  const recommendedAction = getRecommendedProcurementAction(item);
 
   const { daysRemaining, bestLeadTime, buffer, riskLevel, openPOCount } = useMemo(() => {
     const days = getDaysOfStockRemaining(item);
@@ -179,18 +175,6 @@ export default function UrgencyBanner({ item }: { item: ProcurementItem }) {
             <p className="text-[11px] text-muted-foreground">Open POs</p>
             <p className="text-[13px] font-medium text-emerald-600">
               {openPOCount} in progress
-            </p>
-          </div>
-        </>
-      )}
-
-      {isAuto && recommendedAction && (
-        <>
-          <div className="h-8 w-px bg-border" />
-          <div>
-            <p className="text-[11px] text-muted-foreground">Auto policy</p>
-            <p className="text-[13px] font-medium text-foreground/85">
-              {recommendedAction === "po" ? "Known supplier -> PO" : "No history -> RFQ"}
             </p>
           </div>
         </>

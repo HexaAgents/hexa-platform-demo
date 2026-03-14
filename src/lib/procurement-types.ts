@@ -1,10 +1,16 @@
 export type ProcurementSource = "erp_alert" | "engineering_request";
-export type ProcurementStatus = "flagged" | "under_review" | "rfq_drafted" | "rfq_sent" | "po_raised";
+export type ProcurementStatus =
+  | "flagged"
+  | "rfq_sent"
+  | "quotes_received"
+  | "po_sent"
+  | "shipped"
+  | "delivered";
 export type ProcurementPriority = "critical" | "high" | "medium" | "low";
-export type ProcurementRecommendedAction = "po" | "rfq";
 export type RequestUrgency = "routine" | "urgent" | "critical";
 export type RequestCategory = "raw_material" | "standard_component" | "custom_part" | "tooling" | "consumable" | "other";
 export type RFQStatus = "draft" | "sent";
+export type RFQResponseStatus = "sent" | "no_response" | "quote_received";
 export type ScanFrequency = "15min" | "1hr" | "4hr" | "daily";
 export type ReorderPointSource = "erp" | "custom";
 
@@ -47,11 +53,9 @@ export interface ProcurementItem {
   attachments: ProcurementAttachment[];
   preferredSupplierId: string;
   stockHistory: StockHistoryPoint[];
-  // Optional automation metadata for ERP/MRP-driven routing.
-  isAutomated?: boolean;
-  automationSource?: "erp_mrp";
-  recommendedAction?: ProcurementRecommendedAction;
-  routingReason?: string;
+  activeRfqId?: string;
+  selectedQuoteId?: string;
+  purchaseOrderId?: string;
 }
 
 export interface StockHistoryPoint {
@@ -158,6 +162,45 @@ export interface OpenPO {
   carrier?: "ups" | "fedex" | "dhl" | "shipstation" | "manual" | "other";
   latestUpdateAt?: string;
   exceptionReason?: string;
+}
+
+export interface RFQSupplierEntry {
+  supplierId: string;
+  sentAt: string;
+  responseStatus: RFQResponseStatus;
+  quoteId?: string;
+}
+
+export interface SupplierQuote {
+  id: string;
+  rfqId: string;
+  supplierId: string;
+  unitPrice: number;
+  totalPrice: number;
+  leadTimeDays: number;
+  moq: number;
+  paymentTerms: string;
+  deliveryTerms: string;
+  validUntil: string;
+  receivedAt: string;
+  notes: string;
+}
+
+export interface PurchaseOrder {
+  id: string;
+  itemId: string;
+  supplierId: string;
+  quoteId?: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  paymentTerms: string;
+  deliveryAddress: string;
+  expectedDelivery: string;
+  status: "draft" | "sent";
+  createdAt: string;
+  sentAt: string | null;
+  shipmentId?: string;
 }
 
 export interface ProcurementFilters {

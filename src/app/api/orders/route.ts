@@ -34,11 +34,7 @@ export async function POST(request: Request) {
       ? mapParsedLineItemsToOrderLines(parsedPo.lineItems, orderId)
       : generateDefaultLineItems(orderId);
 
-  const shouldAutoPush =
-    (parsedPo.overallConfidence ?? 0) >= 85 &&
-    Array.isArray(parsedPo.missingFields) &&
-    parsedPo.missingFields.length <= 1;
-  const routingStatus = shouldAutoPush ? "pushed_to_mrp" : "staged_for_review";
+  const defaultStage = "pushed_to_mrp";
 
   const fallbackCustomer = {
     id: `cust-${Date.now()}`,
@@ -62,7 +58,7 @@ export async function POST(request: Request) {
   const order: Order = {
     id: orderId,
     orderNumber: `ORD-2026-${String(existingOrders.length + 43).padStart(4, "0")}`,
-    status: "pending",
+    stage: body.stage ?? defaultStage,
     source: body.source || "email",
     createdAt: new Date().toISOString(),
     emailSubject: body.emailSubject || "New Order",
@@ -78,8 +74,7 @@ export async function POST(request: Request) {
     parseConfidence: body.parseConfidence ?? parsedPo.overallConfidence ?? 0,
     parseFieldConfidence: body.parseFieldConfidence ?? parsedPo.fieldConfidence ?? {},
     parseMissingFields: body.parseMissingFields ?? parsedPo.missingFields ?? [],
-    mrpRoutingStatus: body.mrpRoutingStatus ?? routingStatus,
-    mrpRoutedAt: shouldAutoPush ? new Date().toISOString() : null,
+    mrpRoutedAt: new Date().toISOString(),
     ingestionSourceLabel: body.ingestionSourceLabel ?? body.source ?? "email",
   };
 

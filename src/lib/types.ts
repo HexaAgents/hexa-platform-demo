@@ -1,7 +1,16 @@
 export type MatchStatus = "confirmed" | "partial" | "conflict" | "unmatched";
-export type OrderStatus = "pending" | "fulfilled";
 export type OrderSource = "email" | "ecommerce" | "phone";
-export type OrderRoutingStatus = "staged_for_review" | "pushed_to_mrp";
+export type OrderStage =
+  | "needs_clarification"
+  | "clarification_requested"
+  | "clarification_received"
+  | "rfq_received"
+  | "quote_sent"
+  | "po_received"
+  | "po_mismatch"
+  | "pushed_to_mrp"
+  | "shipped"
+  | "delivered";
 export type ParsedFieldKey =
   | "partNumber"
   | "price"
@@ -164,7 +173,7 @@ export interface ShippingMetrics {
 export interface Order {
   id: string;
   orderNumber: string;
-  status: OrderStatus;
+  stage: OrderStage;
   source: OrderSource;
   createdAt: string;
   customer: Customer;
@@ -180,7 +189,6 @@ export interface Order {
   parseConfidence?: number;
   parseFieldConfidence?: Partial<Record<ParsedFieldKey, number>>;
   parseMissingFields?: ParsedFieldKey[];
-  mrpRoutingStatus?: OrderRoutingStatus;
   mrpRoutedAt?: string | null;
   ingestionSourceLabel?: string | null;
   shipmentSummary?: ShipmentSummary;
@@ -211,6 +219,27 @@ export interface Order {
         state: ErpSyncState;
         at: string;
       }>;
+    };
+    clarifications?: Array<{
+      questions: string[];
+      emailSent: { to: string; subject: string; body: string; sentAt: string };
+      replyReceived?: { body: string; receivedAt: string; parsedAnswers: string[] };
+    }>;
+    quoteSummary?: {
+      quoteNumber: string;
+      items: Array<{ sku: string; name: string; qty: number; unitPrice: number }>;
+      subtotal: number;
+      sentAt: string;
+      sentTo: string;
+    };
+    poConfirmation?: {
+      poNumber: string;
+      receivedAt: string;
+      matchesQuote: boolean;
+    };
+    mrpPush?: {
+      pushedAt: string;
+      erpOrderId?: string;
     };
   };
 }

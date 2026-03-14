@@ -169,7 +169,13 @@ export function Sidebar({ orders }: { orders: Order[] }) {
                 <span
                   className={cn(
                     "h-2 w-2 shrink-0 rounded-full",
-                    order.status === "pending" ? "bg-amber-400" : "bg-emerald-500"
+                    order.stage === "delivered" || order.stage === "pushed_to_mrp" || order.stage === "po_received"
+                      ? "bg-emerald-500"
+                      : order.stage === "shipped"
+                        ? "bg-blue-400"
+                        : order.stage === "needs_clarification" || order.stage === "po_mismatch"
+                          ? "bg-red-400"
+                          : "bg-amber-400"
                   )}
                 />
               </Link>

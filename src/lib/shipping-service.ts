@@ -19,7 +19,35 @@ import {
   markIdempotencyKey,
   saveShipment,
 } from "@/lib/shipping-store";
-import { setOrderShipmentSummary } from "@/lib/store";
+import { getOrderById, setOrderShipmentSummary, updateOrder } from "@/lib/store";
+import { OrderStage } from "@/lib/types";
+
+const STAGE_PRIORITY: Record<OrderStage, number> = {
+  needs_clarification: 0,
+  clarification_requested: 1,
+  clarification_received: 2,
+  rfq_received: 3,
+  quote_sent: 4,
+  po_received: 5,
+  po_mismatch: 5,
+  pushed_to_mrp: 6,
+  shipped: 8,
+  delivered: 9,
+};
+
+function orderStageForShipmentStatus(status: ShipmentStatus): OrderStage | null {
+  if (status === "delivered") return "delivered";
+  if (
+    status === "shipment_created" ||
+    status === "label_created" ||
+    status === "picked_up" ||
+    status === "in_transit" ||
+    status === "out_for_delivery"
+  ) {
+    return "shipped";
+  }
+  return null;
+}
 
 const STATUS_PRIORITY: Record<ShipmentStatus, number> = {
   draft: 0,
@@ -214,6 +242,14 @@ export async function upsertShipmentFromEvent(input: UpsertShipmentInput): Promi
       estimatedDelivery: shipment.estimatedDelivery,
       latestEventAt: shipment.lastEventAt,
     });
+
+    const newStage = orderStageForShipmentStatus(shipment.status);
+    if (newStage) {
+      const order = await getOrderById(shipment.orderId);
+      if (order && STAGE_PRIORITY[newStage] > STAGE_PRIORITY[order.stage]) {
+        await updateOrder({ ...order, stage: newStage });
+      }
+    }
   }
 
   return { shipment, event, duplicate: false };
