@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAllOrders, addOrder, deleteOrders } from "@/lib/store";
 import { Order } from "@/lib/types";
-import { generateDefaultLineItems } from "@/lib/default-line-items";
+import { generateDefaultLineItems, getDemoLineItemsForSubject } from "@/lib/default-line-items";
 import {
   mapParsedLineItemsToOrderLines,
   parsePurchaseOrderWithFallback,
@@ -28,11 +28,13 @@ export async function POST(request: Request) {
           attachments: body.attachments,
         });
 
-  const lineItems = Array.isArray(body.lineItems) && body.lineItems.length > 0
-    ? body.lineItems
-    : parsedPo.lineItems.length > 0
-      ? mapParsedLineItemsToOrderLines(parsedPo.lineItems, orderId)
-      : generateDefaultLineItems(orderId);
+  const demoItems = getDemoLineItemsForSubject(body.emailSubject ?? "", orderId);
+  const lineItems = demoItems
+    ?? (Array.isArray(body.lineItems) && body.lineItems.length > 0
+      ? body.lineItems
+      : parsedPo.lineItems.length > 0
+        ? mapParsedLineItemsToOrderLines(parsedPo.lineItems, orderId)
+        : generateDefaultLineItems(orderId));
 
   const defaultStage = "rfq_received";
 

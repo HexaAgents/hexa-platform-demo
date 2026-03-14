@@ -70,12 +70,16 @@ interface LineItemsPanelProps {
   items: LineItem[];
   resolutions?: Record<string, CatalogItem>;
   onResolve?: (lineItemId: string, catalogItem: CatalogItem) => void;
+  onAddClarification?: (lineItemId: string, question: string) => void;
+  clarificationAddedIds?: Set<string>;
 }
 
 export function LineItemsPanel({
   items,
   resolutions,
   onResolve,
+  onAddClarification,
+  clarificationAddedIds,
 }: LineItemsPanelProps) {
   const counts = countByStatus(items);
   const [activeFilter, setActiveFilter] = useState<MatchStatus | null>(null);
@@ -148,6 +152,8 @@ export function LineItemsPanel({
             onResolve={
               onResolve ? (ci) => onResolve(item.id, ci) : undefined
             }
+            onAddClarification={onAddClarification}
+            addedToClarification={clarificationAddedIds?.has(item.id)}
           />
         ))}
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { Order, ComparisonField } from "@/lib/types";
-import { CheckCircle2, AlertTriangle, FileCheck, FileText } from "lucide-react";
+import { Check, AlertTriangle, FileCheck, FileText } from "lucide-react";
 import { PoQuoteComparisonPanel } from "./PoQuoteComparisonPanel";
 import type { DemoContext } from "../OrderWorkspace";
 
@@ -74,7 +74,9 @@ export function PoReceivedSection({ order, mode, demoCtx }: Props) {
             className="flex items-center gap-2 text-[12px]"
           >
             {check.matches ? (
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+              <div className="flex h-[16px] w-[16px] shrink-0 items-center justify-center rounded-none border border-emerald-500/40 bg-emerald-500/10">
+                <Check className="h-2 w-2 text-emerald-600" strokeWidth={3} />
+              </div>
             ) : (
               <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
             )}

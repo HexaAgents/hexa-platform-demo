@@ -191,6 +191,43 @@ export function RfqReceivedSection({ order, mode, demoCtx }: Props) {
     `${order.orderNumber} — Clarification needed for your request`
   );
   const [emailSent, setEmailSent] = useState(false);
+  const [clarificationAddedIds, setClarificationAddedIds] = useState<Set<string>>(new Set());
+
+  const handleAddClarification = useCallback(
+    (lineItemId: string, question: string) => {
+      setClarificationAddedIds((prev) => {
+        const next = new Set(prev);
+        next.add(lineItemId);
+        return next;
+      });
+      setEmailBody((prev) => {
+        const lines = prev.split("\n");
+        let lastNumberedIdx = -1;
+        let highestNumber = 0;
+        for (let i = 0; i < lines.length; i++) {
+          const match = lines[i].match(/^(\d+)\.\s/);
+          if (match) {
+            lastNumberedIdx = i;
+            highestNumber = Math.max(highestNumber, parseInt(match[1], 10));
+          }
+        }
+        const newLine = `${highestNumber + 1}. ${question}`;
+        if (lastNumberedIdx !== -1) {
+          lines.splice(lastNumberedIdx + 1, 0, newLine);
+          return lines.join("\n");
+        }
+        const signoffIdx = lines.findIndex((l) =>
+          l.startsWith("Could you please confirm")
+        );
+        if (signoffIdx !== -1) {
+          lines.splice(signoffIdx, 0, `${newLine}\n`);
+          return lines.join("\n");
+        }
+        return prev + `\n${newLine}`;
+      });
+    },
+    []
+  );
 
   const handleSendClarification = useCallback(() => {
     setEmailSent(true);
@@ -258,10 +295,12 @@ export function RfqReceivedSection({ order, mode, demoCtx }: Props) {
           items={order.lineItems}
           resolutions={resolutions}
           onResolve={handleResolve}
+          onAddClarification={handleAddClarification}
+          clarificationAddedIds={clarificationAddedIds}
         />
       </div>
 
-      {detectedQuestions.length > 0 && (
+      {(detectedQuestions.length > 0 || clarificationAddedIds.size > 0) && (
         <div className="space-y-3 border border-amber-500/30 bg-amber-500/5 p-5">
           <h4 className="text-[12px] font-semibold uppercase tracking-wide text-amber-800">
             Clarification Questions Detected ({detectedQuestions.length})

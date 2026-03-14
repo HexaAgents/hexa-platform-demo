@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, CheckCircle2 } from "lucide-react";
+import { BarChart3, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { SupplierQuote, Supplier, SupplierItemHistory } from "@/lib/procurement-types";
 import { cn } from "@/lib/utils";
@@ -77,10 +77,10 @@ export default function QuoteComparisonSection({
                       ) : null
                     ) : (
                       <div className={cn(
-                        "h-4 w-4 rounded-full border-2 flex items-center justify-center transition-colors",
+                        "h-4 w-4 rounded-none border-2 flex items-center justify-center transition-colors",
                         isSelected ? "border-primary bg-primary" : "border-muted-foreground/30"
                       )}>
-                        {isSelected && <CheckCircle2 className="h-3 w-3 text-primary-foreground" />}
+                        {isSelected && <Check className="h-2.5 w-2.5 text-primary-foreground" strokeWidth={3} />}
                       </div>
                     )}
                   </td>

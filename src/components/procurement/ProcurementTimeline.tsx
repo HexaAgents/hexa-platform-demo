@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Circle } from "lucide-react";
+import { Check } from "lucide-react";
 import type { ProcurementStatus } from "@/lib/procurement-types";
 import { cn } from "@/lib/utils";
 
@@ -71,47 +71,45 @@ export default function ProcurementTimeline({ currentStatus, events }: Procureme
             const isLast = idx === arr.length - 1;
 
             return (
-              <div key={stage.status} className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  {isCompleted ? (
-                    <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
-                  ) : isActive ? (
-                    <div className="relative flex h-5 w-5 items-center justify-center">
-                      <span className="absolute h-5 w-5 animate-ping rounded-full bg-blue-400/30" />
-                      <span className="relative h-3 w-3 rounded-full bg-blue-600" />
-                    </div>
-                  ) : (
-                    <Circle className="h-5 w-5 shrink-0 text-muted-foreground/30" />
-                  )}
-                  {!isLast && (
-                    <div
-                      className={cn(
-                        "my-1 w-px flex-1 min-h-[24px]",
-                        isCompleted ? "bg-emerald-400" : "bg-border"
-                      )}
-                    />
-                  )}
-                </div>
-                <div className={cn("pb-5", isLast && "pb-0")}>
-                  <p className={cn(
-                    "text-[13px] font-medium leading-5",
-                    !isCompleted && !isActive ? "text-muted-foreground/50" : "text-foreground/85"
-                  )}>
-                    {stage.label}
-                  </p>
-                  {stage.date && (
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">
-                      {new Date(stage.date).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
+              <div key={stage.status}>
+                <div className="flex gap-3 items-start">
+                  <div className="mt-0.5 shrink-0">
+                    {isCompleted ? (
+                      <div className="flex h-[18px] w-[18px] items-center justify-center rounded-none border border-emerald-500/40 bg-emerald-500/10">
+                        <Check className="h-2.5 w-2.5 text-emerald-600" strokeWidth={3} />
+                      </div>
+                    ) : isActive ? (
+                      <div className="h-[18px] w-[18px]" />
+                    ) : (
+                      <div className="flex h-[18px] w-[18px] items-center justify-center rounded-none border border-muted-foreground/20 bg-muted/30" />
+                    )}
+                  </div>
+                  <div>
+                    <p className={cn(
+                      "text-[13px] font-medium leading-5",
+                      !isCompleted && !isActive ? "text-muted-foreground/50" : "text-foreground/85"
+                    )}>
+                      {stage.label}
                     </p>
-                  )}
-                  {stage.detail && (
-                    <p className="mt-0.5 text-[11px] text-muted-foreground/80">{stage.detail}</p>
-                  )}
+                    {stage.date && (
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">
+                        {new Date(stage.date).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </p>
+                    )}
+                    {stage.detail && (
+                      <p className="mt-0.5 text-[11px] text-muted-foreground/80">{stage.detail}</p>
+                    )}
+                  </div>
                 </div>
+                {!isLast && (
+                  <div className="ml-[8px] h-5">
+                    <div className="h-full border-l-[1.5px] border-dashed border-border" />
+                  </div>
+                )}
               </div>
             );
           })}

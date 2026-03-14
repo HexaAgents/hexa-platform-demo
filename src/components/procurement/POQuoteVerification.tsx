@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, FileCheck } from "lucide-react";
+import { Check, FileCheck } from "lucide-react";
 import type { PurchaseOrder, SupplierQuote, Supplier } from "@/lib/procurement-types";
 
 interface POQuoteVerificationProps {
@@ -59,7 +59,9 @@ export default function POQuoteVerification({ po, quote }: POQuoteVerificationPr
         </div>
         {allMatch && (
           <div className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-700">
-            <CheckCircle2 className="h-3.5 w-3.5" />
+            <div className="flex h-[16px] w-[16px] items-center justify-center rounded-none border border-emerald-500/40 bg-emerald-500/10">
+              <Check className="h-2 w-2 text-emerald-600" strokeWidth={3} />
+            </div>
             All terms match
           </div>
         )}
@@ -71,11 +73,11 @@ export default function POQuoteVerification({ po, quote }: POQuoteVerificationPr
             key={row.label}
             className="flex items-center gap-3 px-5 py-2.5"
           >
-            <CheckCircle2
-              className={`h-3.5 w-3.5 shrink-0 ${
-                row.matches ? "text-emerald-600" : "text-amber-600"
-              }`}
-            />
+            <div className={`flex h-[16px] w-[16px] shrink-0 items-center justify-center rounded-none border ${
+                row.matches ? "border-emerald-500/40 bg-emerald-500/10" : "border-amber-500/40 bg-amber-500/10"
+              }`}>
+              <Check className={`h-2 w-2 ${row.matches ? "text-emerald-600" : "text-amber-600"}`} strokeWidth={3} />
+            </div>
             <span className="w-28 shrink-0 text-[11px] font-medium text-muted-foreground">
               {row.label}
             </span>

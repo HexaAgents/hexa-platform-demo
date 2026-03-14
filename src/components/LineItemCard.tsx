@@ -3,19 +3,23 @@
 import { useState } from "react";
 import { LineItem, CatalogItem } from "@/lib/types";
 import { MatchStatusBadge } from "./MatchStatusBadge";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, MessageSquarePlus, Check } from "lucide-react";
 import { SkuSelector } from "./SkuSelector";
 
 interface LineItemCardProps {
   item: LineItem;
   resolvedCatalogItem?: CatalogItem | null;
   onResolve?: (catalogItem: CatalogItem) => void;
+  onAddClarification?: (lineItemId: string, question: string) => void;
+  addedToClarification?: boolean;
 }
 
 export function LineItemCard({
   item,
   resolvedCatalogItem,
   onResolve,
+  onAddClarification,
+  addedToClarification,
 }: LineItemCardProps) {
   const [internalSelected, setInternalSelected] =
     useState<CatalogItem | null>(
@@ -58,7 +62,29 @@ export function LineItemCard({
             {item.parsedProductName}
           </h4>
         </div>
-        <MatchStatusBadge status={item.matchStatus} />
+        <div className="flex items-center gap-2">
+          {needsAction && onAddClarification && (
+            addedToClarification ? (
+              <span className="inline-flex items-center gap-1 border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+                <Check className="h-3 w-3" />
+                In email
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  const question = buildClarificationQuestion(item);
+                  onAddClarification(item.id, question);
+                }}
+                className="inline-flex items-center gap-1 border border-border bg-background px-2 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:border-amber-500/40 hover:bg-amber-500/10 hover:text-amber-700"
+              >
+                <MessageSquarePlus className="h-3 w-3" />
+                Ask customer
+              </button>
+            )
+          )}
+          <MatchStatusBadge status={item.matchStatus} />
+        </div>
       </div>
 
       {needsAction && (
@@ -123,8 +149,30 @@ export function LineItemCard({
           ))}
         </div>
       )}
+
     </div>
   );
+}
+
+function buildClarificationQuestion(item: LineItem): string {
+  const prefix = `Line ${item.lineNumber} (${item.parsedProductName})`;
+
+  if (item.matchStatus === "conflict" && item.matchedCatalogItems.length > 1) {
+    const options = item.matchedCatalogItems
+      .map((ci) => `${ci.catalogSku} — ${ci.catalogName}`)
+      .join("; ");
+    return `${prefix}: Multiple matching products found. Could you confirm which one you need? Options: ${options}`;
+  }
+
+  if (item.matchStatus === "unmatched") {
+    return `${prefix}: We could not find this product in our catalog. Could you provide the exact part number or product name?`;
+  }
+
+  if (item.issues.length > 0) {
+    return `${prefix}: ${item.issues[0]}`;
+  }
+
+  return `${prefix}: Could you provide more details to help us identify the correct product?`;
 }
 
 function ConfidenceBar({ value }: { value: number }) {

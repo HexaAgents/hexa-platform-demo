@@ -3,7 +3,7 @@
 import { useMemo, useState, useCallback } from "react";
 import { Order, ComparisonField } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, AlertTriangle, Send, ArrowRight } from "lucide-react";
+import { Check, AlertTriangle, Send, ArrowRight } from "lucide-react";
 import type { DemoContext } from "../OrderWorkspace";
 
 const FIELD_LABEL: Record<ComparisonField, string> = {
@@ -84,7 +84,9 @@ export function PoQuoteComparisonPanel({ order, demoCtx }: Props) {
         <div className="space-y-4">
           <div className="border border-emerald-500/30 bg-emerald-500/5 px-3.5 py-2.5">
             <p className="inline-flex items-center gap-1.5 text-[12px] font-medium text-emerald-700">
-              <CheckCircle2 className="h-3.5 w-3.5" />
+              <div className="flex h-[16px] w-[16px] shrink-0 items-center justify-center rounded-none border border-emerald-500/40 bg-emerald-500/10">
+                <Check className="h-2 w-2 text-emerald-600" strokeWidth={3} />
+              </div>
               Matches quote{" "}
               <span className="font-mono">{flow.quoteNumber ?? "Quote ref"}</span>
             </p>
@@ -133,7 +135,9 @@ export function PoQuoteComparisonPanel({ order, demoCtx }: Props) {
               >
                 <div className="flex items-center gap-2">
                   {check.matches ? (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-none border border-emerald-500/40 bg-emerald-500/10">
+                      <Check className="h-2.5 w-2.5 text-emerald-600" strokeWidth={3} />
+                    </div>
                   ) : (
                     <AlertTriangle className="h-4 w-4 text-red-600" />
                   )}
@@ -201,7 +205,9 @@ export function PoQuoteComparisonPanel({ order, demoCtx }: Props) {
       <div className="space-y-4">
         <div className="border border-emerald-500/30 bg-emerald-500/5 px-3.5 py-2.5">
           <p className="inline-flex items-center gap-1.5 text-[12px] font-medium text-emerald-700">
-            <CheckCircle2 className="h-3.5 w-3.5" />
+            <div className="flex h-[16px] w-[16px] shrink-0 items-center justify-center rounded-none border border-emerald-500/40 bg-emerald-500/10">
+              <Check className="h-2 w-2 text-emerald-600" strokeWidth={3} />
+            </div>
             Matches quote{" "}
             <span className="font-mono">{flow.quoteNumber ?? "Quote ref"}</span>
           </p>
@@ -250,7 +256,9 @@ export function PoQuoteComparisonPanel({ order, demoCtx }: Props) {
             >
               <div className="flex items-center gap-2">
                 {check.matches ? (
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-none border border-emerald-500/40 bg-emerald-500/10">
+                    <Check className="h-2.5 w-2.5 text-emerald-600" strokeWidth={3} />
+                  </div>
                 ) : (
                   <AlertTriangle className="h-4 w-4 text-red-600" />
                 )}

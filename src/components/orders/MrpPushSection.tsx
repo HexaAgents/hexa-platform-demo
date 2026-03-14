@@ -1,7 +1,7 @@
 "use client";
 
 import { Order } from "@/lib/types";
-import { CheckCircle2 } from "lucide-react";
+import { Check } from "lucide-react";
 
 interface Props {
   order: Order;
@@ -18,7 +18,9 @@ export function MrpPushSection({ order, mode }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 border border-emerald-500/30 bg-emerald-500/5 px-4 py-3">
-        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+        <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-none border border-emerald-500/40 bg-emerald-500/10">
+          <Check className="h-2.5 w-2.5 text-emerald-600" strokeWidth={3} />
+        </div>
         <div>
           <p className="text-[12px] font-medium text-emerald-700">
             Order synced to ERP

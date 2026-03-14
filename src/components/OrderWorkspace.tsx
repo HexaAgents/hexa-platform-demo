@@ -238,11 +238,7 @@ export function OrderWorkspace({ order, demoCtx }: OrderWorkspaceProps) {
     <div>
       {demoCtx && (
         <div className="mb-4 flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 border border-blue-500/30 bg-blue-500/10 px-2.5 py-1 text-[11px] font-semibold text-blue-700">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-600" />
-            </span>
+          <span className="inline-flex items-center border border-blue-500/30 bg-blue-500/10 px-2.5 py-1 text-[11px] font-semibold text-blue-700">
             Live Demo
           </span>
           {demoCtx.isAutoProgressing && (

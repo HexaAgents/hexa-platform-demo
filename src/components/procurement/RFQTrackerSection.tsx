@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, Clock, CheckCircle2, Circle, RotateCw } from "lucide-react";
+import { Mail, Clock, Check, RotateCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { RFQSupplierEntry, Supplier, DraftRFQ } from "@/lib/procurement-types";
 import { cn } from "@/lib/utils";
@@ -44,11 +44,17 @@ export default function RFQTrackerSection({ rfq, entries, isReadOnly = false }: 
             <div key={entry.supplierId} className="flex items-center justify-between px-5 py-3.5">
               <div className="flex items-center gap-3">
                 {entry.responseStatus === "quote_received" ? (
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                  <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-none border border-emerald-500/40 bg-emerald-500/10">
+                    <Check className="h-2.5 w-2.5 text-emerald-600" strokeWidth={3} />
+                  </div>
                 ) : entry.responseStatus === "no_response" ? (
-                  <Clock className="h-4 w-4 shrink-0 text-amber-600" />
+                  <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-none border border-amber-500/40 bg-amber-500/10">
+                    <Clock className="h-2.5 w-2.5 text-amber-600" />
+                  </div>
                 ) : (
-                  <Circle className="h-4 w-4 shrink-0 text-blue-600" />
+                  <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-none border border-blue-500/40 bg-blue-500/10">
+                    <Mail className="h-2.5 w-2.5 text-blue-600" />
+                  </div>
                 )}
                 <div>
                   <p className="text-[13px] font-medium text-foreground/85">{entry.supplier.name}</p>
