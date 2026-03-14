@@ -5,7 +5,6 @@ import { Order, Shipment, ShipmentEvent, ShipmentStatus } from "@/lib/types";
 import ShipmentTrackingPanel, {
   ShipmentTrackingLoading,
   ShipmentTrackingEmpty,
-  CARRIER_LABELS,
   type TrackingStage,
 } from "./ShipmentTrackingPanel";
 
@@ -150,7 +149,6 @@ export default function ShipmentPanel({ order }: { order: Order }) {
         estimatedDelivery={summary.estimatedDelivery}
         shipTo={shipTo}
         events={buildSummaryEvents(summary.status, summary.latestEventAt)}
-        isDemo
       />
     );
   }

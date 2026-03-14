@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Truck,
   Package,
-  Check,
   ExternalLink,
   Clock,
   MapPin,
@@ -30,22 +29,7 @@ export interface ShipmentTrackingPanelProps {
   estimatedDelivery?: string;
   shipTo: string;
   events: ShipmentEvent[];
-  isDemo?: boolean;
 }
-
-const STATUS_PRIORITY: Record<string, number> = {
-  draft: 0,
-  shipment_created: 1,
-  label_created: 2,
-  picked_up: 3,
-  in_transit: 4,
-  out_for_delivery: 5,
-  delivered: 6,
-  exception: 5,
-  delayed: 5,
-  returned: 6,
-  cancelled: 6,
-};
 
 const statusBadgeClass: Record<ShipmentStatus, string> = {
   draft: "border-border bg-muted/50 text-foreground/70",
@@ -189,20 +173,11 @@ export default function ShipmentTrackingPanel({
   estimatedDelivery,
   shipTo,
   events,
-  isDemo,
 }: ShipmentTrackingPanelProps) {
   const sortedEvents = [...events].sort(
     (a, b) =>
       new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime(),
   );
-  const currentPriority = STATUS_PRIORITY[shipmentStatus] ?? 0;
-
-  const eventByStatus = new Map<string, ShipmentEvent>();
-  for (const ev of sortedEvents) {
-    if (!eventByStatus.has(ev.status)) {
-      eventByStatus.set(ev.status, ev);
-    }
-  }
 
   const latestEtaEvent = [...sortedEvents]
     .reverse()
@@ -307,7 +282,7 @@ export default function ShipmentTrackingPanel({
       </div>
 
       {/* Current step card */}
-      <div className="border-b border-border px-6 py-5">
+      <div className="px-6 py-5">
         <CurrentStepCard
           stages={stages}
           status={shipmentStatus}
@@ -315,100 +290,6 @@ export default function ShipmentTrackingPanel({
           trackingNumber={trackingNumber}
           eta={estimatedDelivery}
         />
-      </div>
-
-      {/* Tracking timeline */}
-      <div className="px-6 py-5">
-        <p className="mb-4 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-          Tracking Timeline
-        </p>
-        <div className="space-y-0">
-          {[...stages].reverse().map((stage, idx, arr) => {
-            const stagePriority =
-              STATUS_PRIORITY[stage.eventStatus] ?? 0;
-            const matchedEvent = eventByStatus.get(stage.eventStatus);
-            const isCompleted = stagePriority < currentPriority;
-            const isActive = stage.eventStatus === shipmentStatus;
-            const isPending = stagePriority > currentPriority;
-            const isLast = idx === arr.length - 1;
-
-            return (
-              <div key={stage.id}>
-                <div className="flex gap-3 items-start">
-                  <div className="mt-0.5 shrink-0">
-                    {isCompleted ? (
-                      <div className="flex h-[18px] w-[18px] items-center justify-center rounded-none border border-emerald-500/40 bg-emerald-500/10">
-                        <Check
-                          className="h-2.5 w-2.5 text-emerald-600"
-                          strokeWidth={3}
-                        />
-                      </div>
-                    ) : isActive ? (
-                      <div className="h-[18px] w-[18px]" />
-                    ) : (
-                      <div className="flex h-[18px] w-[18px] items-center justify-center rounded-none border border-muted-foreground/20 bg-muted/30" />
-                    )}
-                  </div>
-                  <div>
-                    <p
-                      className={cn(
-                        "text-[13px] font-medium leading-5",
-                        isPending
-                          ? "text-muted-foreground/50"
-                          : "text-foreground/85",
-                      )}
-                    >
-                      {stage.label}
-                    </p>
-                    {matchedEvent && (
-                      <p className="mt-0.5 text-[11px] text-muted-foreground">
-                        {new Date(matchedEvent.occurredAt).toLocaleString(
-                          "en-US",
-                          {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                            hour: "numeric",
-                            minute: "2-digit",
-                          },
-                        )}
-                      </p>
-                    )}
-                    {matchedEvent?.message && !isDemo && (
-                      <p className="mt-0.5 text-[11px] text-muted-foreground/80">
-                        {matchedEvent.message}
-                      </p>
-                    )}
-                    {matchedEvent?.trackingNumber &&
-                      stage.eventStatus === "label_created" && (
-                        <p className="mt-0.5 text-[11px] font-mono text-muted-foreground">
-                          Tracking: {matchedEvent.trackingNumber}
-                        </p>
-                      )}
-                    {matchedEvent?.estimatedDelivery &&
-                      stage.eventStatus === "in_transit" && (
-                        <p className="mt-0.5 text-[11px] text-muted-foreground">
-                          Est. delivery:{" "}
-                          {new Date(
-                            matchedEvent.estimatedDelivery,
-                          ).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </p>
-                      )}
-                  </div>
-                </div>
-                {!isLast && (
-                  <div className="ml-[8px] h-5">
-                    <div className="h-full border-l-[1.5px] border-dashed border-border" />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
 
         {(shipmentStatus === "exception" || shipmentStatus === "delayed") && (
           <div className="mt-4 flex items-start gap-2 border border-amber-500/30 bg-amber-500/5 px-4 py-3">

@@ -353,6 +353,17 @@ export default function ItemDetailPanel({ item: initialItem, onClose, onItemUpda
   }
 
   function renderQuotesReceived(isActive: boolean) {
+    const activeQuote = selectedQuoteId
+      ? quotes.find((q) => q.id === selectedQuoteId)
+      : effectiveSelectedQuoteId
+        ? quotes.find((q) => q.id === effectiveSelectedQuoteId)
+        : null;
+
+    const rfqQty = rfq?.quantity ??
+      (initialItem.source === "engineering_request"
+        ? initialItem.maxStock || 25
+        : Math.max(initialItem.maxStock - initialItem.currentStock, initialItem.reorderPoint));
+
     return (
       <div className="space-y-4">
         {isActive && days !== Infinity && (
@@ -370,6 +381,32 @@ export default function ItemDetailPanel({ item: initialItem, onClose, onItemUpda
           onSelectQuote={setSelectedQuoteId}
           isReadOnly={!isActive}
         />
+        {isActive && activeQuote && (
+          <>
+            <div className="flex items-center gap-2.5 border border-border bg-muted/30 px-5 py-3">
+              <FileText className="h-4 w-4 text-foreground/70" />
+              <span className="text-[13px] font-semibold text-foreground">
+                Draft Purchase Order
+              </span>
+              <span className="text-[11px] text-muted-foreground">
+                from {activeQuote.supplier.name} quote
+              </span>
+            </div>
+            <DraftPOInline
+              item={initialItem}
+              supplier={activeQuote.supplier}
+              supplierEmail={activeQuote.supplier.contactEmail}
+              unitPrice={activeQuote.unitPrice}
+              quantity={rfqQty}
+              paymentTerms={activeQuote.paymentTerms}
+              deliveryDate={(() => {
+                const d = new Date();
+                d.setDate(d.getDate() + activeQuote.leadTimeDays);
+                return d.toISOString().split("T")[0];
+              })()}
+            />
+          </>
+        )}
       </div>
     );
   }

@@ -56,7 +56,7 @@ export default function ProcurementQueue() {
   const [showRequestForm, setShowRequestForm] = useState(false);
 
   const [items, setItems] = useState<ProcurementItem[]>(() => {
-    const ids = ["pi-001", "pi-014", "pi-013", "pi-004", "pi-011", "pi-007", "pi-008", "pi-006"];
+    const ids = ["pi-001", "pi-013", "pi-004", "pi-011", "pi-006"];
     return ids.map((id) => procurementItems.find((i) => i.id === id)!).filter(Boolean);
   });
 

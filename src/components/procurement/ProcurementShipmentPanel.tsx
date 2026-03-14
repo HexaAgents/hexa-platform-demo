@@ -171,7 +171,6 @@ export default function ProcurementShipmentPanel({
       estimatedDelivery={estimatedDelivery}
       shipTo={deliveryAddress}
       events={events}
-      isDemo={!!demoShipment}
     />
   );
 }
