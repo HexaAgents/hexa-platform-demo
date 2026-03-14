@@ -12,6 +12,46 @@ interface Props {
   demoCtx?: DemoContext;
 }
 
+function toCustomerQuestion(rawIssue: string): string {
+  if (rawIssue.includes("No SKU provided — diameter not specified")) {
+    return "Could you confirm the required diameter and SKU for this item?";
+  }
+  if (rawIssue.includes("Multiple sizes available")) {
+    const options = rawIssue.match(/\(([^)]+)\)/)?.[1];
+    return options
+      ? `Which size do you need (${options})?`
+      : "Which size do you need for this item?";
+  }
+  if (
+    rawIssue.includes("Source mentions both TC-25 and TC-30 — bore size unclear")
+  ) {
+    return "Should we quote TC-25 or TC-30 for the required bore size?";
+  }
+  if (rawIssue.includes("Price differs between options")) {
+    return "Which option should we price so we can proceed with an accurate quote?";
+  }
+  if (rawIssue.includes("Manual review required to resolve conflict")) {
+    return "Can you confirm the exact part/spec you want us to quote for this line?";
+  }
+  if (rawIssue.includes("No matching item found in product catalog")) {
+    return "Could you share a drawing, exact part number, or additional specs for this custom spacer?";
+  }
+  if (rawIssue.includes("Material and dimensions not specified")) {
+    return "What material and dimensions should we use for this custom spacer?";
+  }
+  if (
+    rawIssue.includes(
+      '"Custom" suggests a non-standard part — verify with customer'
+    )
+  ) {
+    return "Is this a fully custom/non-standard part, and should we quote it as a custom fabrication item?";
+  }
+  if (rawIssue.startsWith("Missing order fields:")) {
+    return "Could you confirm your target price/budget and the required due date for this order?";
+  }
+  return `Could you clarify: ${rawIssue}?`;
+}
+
 function CompletedRfqTable({ order }: { order: Order }) {
   return (
     <div className="space-y-3">
@@ -123,15 +163,28 @@ export function RfqReceivedSection({ order, mode, demoCtx }: Props) {
     return qs;
   }, [issueItems, order.parseMissingFields]);
 
+  const emailQuestions = useMemo(() => {
+    return detectedQuestions.map((question) => {
+      if (question.startsWith("Missing order fields:")) {
+        return toCustomerQuestion(question);
+      }
+
+      const linePrefixMatch = question.match(/^Line \d+ \([^)]+\):\s*/);
+      const linePrefix = linePrefixMatch?.[0] ?? "";
+      const rawIssue = question.replace(/^Line \d+ \([^)]+\):\s*/, "");
+      return `${linePrefix}${toCustomerQuestion(rawIssue)}`;
+    });
+  }, [detectedQuestions]);
+
   const customerName = order.customer.name.split(" ")[0];
   const defaultBody = useMemo(() => {
     let body = `Hi ${customerName},\n\nThank you for your request (${order.orderNumber}). We need a few clarifications before we can prepare your quote:\n\n`;
-    detectedQuestions.forEach((q, i) => {
+    emailQuestions.forEach((q, i) => {
       body += `${i + 1}. ${q}\n`;
     });
-    body += `\nCould you please confirm or provide the missing details?\n\nBest regards,\nHexa Sales Team`;
+    body += `\nCould you please confirm these details?\n\nBest regards,\nJames Morrison`;
     return body;
-  }, [customerName, order.orderNumber, detectedQuestions]);
+  }, [customerName, order.orderNumber, emailQuestions]);
 
   const [emailBody, setEmailBody] = useState(defaultBody);
   const [emailSubject, setEmailSubject] = useState(
