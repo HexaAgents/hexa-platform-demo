@@ -75,15 +75,16 @@ async function generateRfqPacific() {
 
   // Table
   y -= 25;
-  const cols = [m, m + 35, m + 200, m + 290, m + 345, m + 400, m + 460];
+  const cols = [m, m + 35, m + 200, m + 290, m + 340, m + 390, m + 448];
   const colLabels = ["#", "Description", "SKU", "Qty", "UOM", "Target Price", "Need Date"];
 
-  drawRect(page, m, y - 4, width - 2 * m, 18, COLORS.tableHeaderBg);
+  drawRect(page, m, y - 6, width - 2 * m, 20, COLORS.tableHeaderBg);
   for (let i = 0; i < colLabels.length; i++) {
     page.drawText(colLabels[i], { x: cols[i], y, size: 8, font: bold, color: COLORS.gray });
   }
+  y -= 20;
+  drawHLine(page, y + 12, m, width - m);
 
-  y -= 22;
   const items = [
     ["1", "Aluminum Bracket 100mm", "AL-BRK-100", "200", "units", "$8.75", "Apr 15, 2026"],
     ["2", "Stainless Dowel Pin", "—", "50", "units", "TBD", "Apr 15, 2026"],
@@ -96,8 +97,8 @@ async function generateRfqPacific() {
     for (let i = 0; i < row.length; i++) {
       page.drawText(row[i], { x: cols[i], y, size: 8.5, font: regular, color: COLORS.dark });
     }
-    y -= 16;
-    drawHLine(page, y + 4, m, width - m);
+    y -= 20;
+    drawHLine(page, y + 12, m, width - m);
   }
 
   // Notes
@@ -169,15 +170,16 @@ async function generateRfqAcme() {
   page.drawText("plant retrofit project. Please provide unit pricing, availability, and estimated lead times.", { x: m, y, size: 9, font: regular, color: COLORS.dark });
 
   y -= 25;
-  const cols = [m, m + 35, m + 210, m + 300, m + 350, m + 400, m + 460];
+  const cols = [m, m + 35, m + 210, m + 300, m + 342, m + 388, m + 452];
   const colLabels = ["Line", "Description", "Part No.", "Qty", "UOM", "Budget", "Due Date"];
 
-  drawRect(page, m, y - 4, width - 2 * m, 18, COLORS.tableHeaderBg);
+  drawRect(page, m, y - 6, width - 2 * m, 20, COLORS.tableHeaderBg);
   for (let i = 0; i < colLabels.length; i++) {
     page.drawText(colLabels[i], { x: cols[i], y, size: 8, font: bold, color: COLORS.gray });
   }
+  y -= 20;
+  drawHLine(page, y + 12, m, width - m);
 
-  y -= 22;
   const items = [
     ["1", "Valve Body - Stainless 316", "VB-316-90", "120", "units", "$42.50", "Mar 28"],
     ["2", "Pump Impeller 4in", "IMP-4-220", "60", "units", "$78.00", "Mar 29"],
@@ -188,8 +190,8 @@ async function generateRfqAcme() {
     for (let i = 0; i < row.length; i++) {
       page.drawText(row[i], { x: cols[i], y, size: 8.5, font: regular, color: COLORS.dark });
     }
-    y -= 16;
-    drawHLine(page, y + 4, m, width - m);
+    y -= 20;
+    drawHLine(page, y + 12, m, width - m);
   }
 
   y -= 20;
@@ -234,7 +236,19 @@ async function generateRfqNorthfield() {
 
   let y = height - 100;
 
-  drawRect(page, m, y - 8, 230, 90, rgb(0.96, 0.96, 0.98));
+  const boxW = 240;
+  const boxGap = width - 2 * m - 2 * boxW;
+  const boxPadTop = 10;
+  const boxPadBot = 10;
+  const lineH = 14;
+  const boxH = boxPadTop + 4 * lineH + boxPadBot;
+  const boxTop = y + boxPadTop;
+  const boxBot = boxTop - boxH;
+  const rightBoxX = m + boxW + boxGap;
+
+  drawRect(page, m, boxBot, boxW, boxH, rgb(0.96, 0.96, 0.98));
+  drawRect(page, rightBoxX, boxBot, boxW, boxH, rgb(0.96, 0.96, 0.98));
+
   const metaLeft = [
     ["RFQ #:", "RFQ-2026-1187"],
     ["Date:", "March 13, 2026"],
@@ -243,13 +257,12 @@ async function generateRfqNorthfield() {
     ["Phone:", "(555) 220-1178"],
   ];
   for (const [label, value] of metaLeft) {
-    page.drawText(label, { x: m + 8, y, size: 8.5, font: bold, color: COLORS.gray });
+    page.drawText(label, { x: m + 10, y, size: 8.5, font: bold, color: COLORS.gray });
     page.drawText(value, { x: m + 68, y, size: 8.5, font: regular, color: COLORS.dark });
-    y -= 14;
+    y -= lineH;
   }
 
   y = height - 100;
-  drawRect(page, m + 260, y - 8, 230, 90, rgb(0.96, 0.96, 0.98));
   const metaRight = [
     ["Ship To:", "810 Industrial Parkway"],
     ["", "Gate 6, Dayton, OH 45402"],
@@ -258,9 +271,9 @@ async function generateRfqNorthfield() {
     ["Project:", "March Machining Lot"],
   ];
   for (const [label, value] of metaRight) {
-    if (label) page.drawText(label, { x: m + 268, y, size: 8.5, font: bold, color: COLORS.gray });
-    page.drawText(value, { x: m + 328, y, size: 8.5, font: regular, color: COLORS.dark });
-    y -= 14;
+    if (label) page.drawText(label, { x: rightBoxX + 10, y, size: 8.5, font: bold, color: COLORS.gray });
+    page.drawText(value, { x: rightBoxX + 68, y, size: 8.5, font: regular, color: COLORS.dark });
+    y -= lineH;
   }
 
   y -= 20;
@@ -271,15 +284,16 @@ async function generateRfqNorthfield() {
   page.drawText("standard finishing and inspection per our standing quality agreement.", { x: m, y, size: 9, font: regular, color: COLORS.dark });
 
   y -= 25;
-  const cols = [m, m + 30, m + 195, m + 290, m + 340, m + 395, m + 460];
+  const cols = [m, m + 30, m + 195, m + 285, m + 330, m + 385, m + 445];
   const colLabels = ["#", "Product Description", "SKU / Part #", "Qty", "UOM", "Unit Price", "Due Date"];
 
-  drawRect(page, m, y - 4, width - 2 * m, 18, rgb(0.89, 0.88, 0.93));
+  drawRect(page, m, y - 6, width - 2 * m, 20, rgb(0.89, 0.88, 0.93));
   for (let i = 0; i < colLabels.length; i++) {
     page.drawText(colLabels[i], { x: cols[i], y, size: 8, font: bold, color: COLORS.gray });
   }
+  y -= 20;
+  drawHLine(page, y + 12, m, width - m);
 
-  y -= 22;
   const items = [
     ["1", "Valve Body - Stainless 316 (rev C)", "VB-316-90", "120", "units", "$42.50", "Mar 28, 2026"],
     ["2", "Pump Impeller 4in (rev B)", "IMP-4-220", "60", "units", "$78.00", "Mar 29, 2026"],
@@ -287,18 +301,18 @@ async function generateRfqNorthfield() {
   ];
 
   for (let r = 0; r < items.length; r++) {
-    if (r % 2 === 1) drawRect(page, m, y - 4, width - 2 * m, 16, rgb(0.97, 0.97, 0.99));
+    if (r % 2 === 1) drawRect(page, m, y - 8, width - 2 * m, 20, rgb(0.97, 0.97, 0.99));
     for (let i = 0; i < items[r].length; i++) {
       page.drawText(items[r][i], { x: cols[i], y, size: 8.5, font: regular, color: COLORS.dark });
     }
-    y -= 16;
-    drawHLine(page, y + 4, m, width - m);
+    y -= 20;
+    drawHLine(page, y + 12, m, width - m);
   }
 
   y -= 8;
-  drawRect(page, m + 300, y - 4, width - m - (m + 300), 18, rgb(0.96, 0.96, 0.98));
-  page.drawText("Estimated Total:", { x: m + 308, y, size: 8.5, font: bold, color: COLORS.gray });
-  page.drawText("$12,222.00", { x: m + 460, y, size: 8.5, font: bold, color: COLORS.dark });
+  drawRect(page, m + 285, y - 4, width - m - (m + 285), 18, rgb(0.96, 0.96, 0.98));
+  page.drawText("Estimated Total:", { x: m + 293, y, size: 8.5, font: bold, color: COLORS.gray });
+  page.drawText("$12,222.00", { x: m + 445, y, size: 8.5, font: bold, color: COLORS.dark });
 
   y -= 30;
   page.drawText("TERMS & CONDITIONS:", { x: m, y, size: 9, font: bold, color: COLORS.dark });
@@ -355,7 +369,6 @@ async function generateRfqSummit() {
 
   y -= 20;
   drawRect(page, m, y - 120, width - 2 * m, 140, rgb(0.98, 0.97, 0.94));
-  drawRect(page, m, y - 120, width - 2 * m, 140, rgb(0, 0, 0, 0));
   page.drawRectangle({ x: m, y: y - 120, width: width - 2 * m, height: 140, borderColor: rgb(0.85, 0.8, 0.7), borderWidth: 1 });
 
   page.drawText("[ Transcription of handwritten note ]", { x: m + 15, y: y - 5, size: 8, font: regular, color: COLORS.lightGray });
@@ -381,15 +394,16 @@ async function generateRfqSummit() {
   page.drawText("PARSED LINE ITEMS:", { x: m, y, size: 9, font: bold, color: COLORS.dark });
 
   y -= 18;
-  const cols = [m, m + 30, m + 190, m + 280, m + 330, m + 395, m + 460];
+  const cols = [m, m + 30, m + 190, m + 275, m + 320, m + 385, m + 445];
   const colLabels = ["#", "Product", "Part No.", "Qty", "UOM", "Catalog Price", "Need By"];
 
-  drawRect(page, m, y - 4, width - 2 * m, 18, COLORS.tableHeaderBg);
+  drawRect(page, m, y - 6, width - 2 * m, 20, COLORS.tableHeaderBg);
   for (let i = 0; i < colLabels.length; i++) {
     page.drawText(colLabels[i], { x: cols[i], y, size: 8, font: bold, color: COLORS.gray });
   }
+  y -= 20;
+  drawHLine(page, y + 12, m, width - m);
 
-  y -= 22;
   const items = [
     ["1", "Shaft Collar 12mm (rev B)", "SC-12", "30", "units", "$6.90", "Mar 25, 2026"],
     ["2", "Deep Groove Bearing 6205", "BB-6205", "75", "units", "$4.80", "Mar 25, 2026"],
@@ -400,13 +414,13 @@ async function generateRfqSummit() {
     for (let i = 0; i < row.length; i++) {
       page.drawText(row[i], { x: cols[i], y, size: 8.5, font: regular, color: COLORS.dark });
     }
-    y -= 16;
-    drawHLine(page, y + 4, m, width - m);
+    y -= 20;
+    drawHLine(page, y + 12, m, width - m);
   }
 
   y -= 8;
-  page.drawText("Subtotal (at catalog):", { x: m + 340, y, size: 8.5, font: bold, color: COLORS.gray });
-  page.drawText("$797.00", { x: m + 460, y, size: 8.5, font: bold, color: COLORS.dark });
+  page.drawText("Subtotal (at catalog):", { x: m + 325, y, size: 8.5, font: bold, color: COLORS.gray });
+  page.drawText("$797.00", { x: m + 445, y, size: 8.5, font: bold, color: COLORS.dark });
 
   y -= 30;
   page.drawText("DELIVERY:", { x: m, y, size: 9, font: bold, color: COLORS.dark });
@@ -484,12 +498,13 @@ async function generatePoTopline() {
   const cols = [m, m + 28, m + 195, m + 280, m + 320, m + 370, m + 430];
   const colLabels = ["#", "Item Description", "Part No.", "Qty", "UOM", "Unit Price", "Line Total"];
 
-  drawRect(page, m, y - 4, width - 2 * m, 18, rgb(0.9, 0.92, 0.95));
+  drawRect(page, m, y - 6, width - 2 * m, 20, rgb(0.9, 0.92, 0.95));
   for (let i = 0; i < colLabels.length; i++) {
     page.drawText(colLabels[i], { x: cols[i], y, size: 8, font: bold, color: COLORS.gray });
   }
+  y -= 20;
+  drawHLine(page, y + 12, m, width - m);
 
-  y -= 22;
   const items = [
     ["1", "Brass Hinge Small - Bulk 500", "BH-SM-500", "500", "units", "$0.85", "$425.00"],
     ["2", "Drawer Slide 18\" Pair", "DS-18-PR", "25", "pairs", "$11.00", "$275.00"],
@@ -498,12 +513,12 @@ async function generatePoTopline() {
   ];
 
   for (let r = 0; r < items.length; r++) {
-    if (r % 2 === 1) drawRect(page, m, y - 4, width - 2 * m, 16, rgb(0.97, 0.98, 0.99));
+    if (r % 2 === 1) drawRect(page, m, y - 8, width - 2 * m, 20, rgb(0.97, 0.98, 0.99));
     for (let i = 0; i < items[r].length; i++) {
       page.drawText(items[r][i], { x: cols[i], y, size: 8.5, font: regular, color: COLORS.dark });
     }
-    y -= 16;
-    drawHLine(page, y + 4, m, width - m);
+    y -= 20;
+    drawHLine(page, y + 12, m, width - m);
   }
 
   // Totals
