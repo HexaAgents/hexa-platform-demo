@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { Search, Package, Wrench, Settings, Plus } from "lucide-react";
+import { Search, Package, Wrench, Settings, Plus, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -13,6 +13,7 @@ import {
 } from "@/data/procurement-data";
 import type { ProcurementItem, ProcurementStatus, ProcurementPriority } from "@/lib/procurement-types";
 import ItemDetailPanel from "./ItemDetailPanel";
+import ManualRequestDemoPanel from "./ManualRequestDemoPanel";
 import ERPScanConfig from "./ERPScanConfig";
 import EngineeringRequestForm from "./EngineeringRequestForm";
 import { cn } from "@/lib/utils";
@@ -56,7 +57,7 @@ export default function ProcurementQueue() {
   const [showRequestForm, setShowRequestForm] = useState(false);
 
   const [items, setItems] = useState<ProcurementItem[]>(() => {
-    const ids = ["pi-001", "pi-013", "pi-004", "pi-011", "pi-006"];
+    const ids = ["pi-001", "pi-013", "pi-004", "pi-015", "pi-011", "pi-006"];
     return ids.map((id) => procurementItems.find((i) => i.id === id)!).filter(Boolean);
   });
 
@@ -170,8 +171,7 @@ export default function ProcurementQueue() {
             filtered.map((item) => {
               const days = getDaysOfStockRemaining(item);
               const daysColor = getStockColor(days);
-              const isEngineering = item.source === "engineering_request";
-              const Icon = isEngineering ? Wrench : Package;
+              const Icon = item.source === "engineering_request" ? Wrench : item.source === "manual_request" ? User : Package;
 
               return (
                 <button
@@ -200,7 +200,9 @@ export default function ProcurementQueue() {
                       <p className="text-[12px] text-muted-foreground">
                         {item.source === "erp_alert"
                           ? "ERP Flag"
-                          : `Suggested by ${item.requestedBy}`}
+                          : item.source === "manual_request"
+                            ? `Requested by ${item.requestedBy}`
+                            : `Suggested by ${item.requestedBy}`}
                       </p>
                     </div>
 
@@ -264,13 +266,19 @@ export default function ProcurementQueue() {
         </div>
       </ScrollArea>
 
-      {selectedItem && (
+      {selectedItem && selectedItem.source === "manual_request" ? (
+        <ManualRequestDemoPanel
+          item={selectedItem}
+          onClose={() => setSelectedItemId(null)}
+          onItemUpdate={handleItemUpdate}
+        />
+      ) : selectedItem ? (
         <ItemDetailPanel
           item={selectedItem}
           onClose={() => setSelectedItemId(null)}
           onItemUpdate={handleItemUpdate}
         />
-      )}
+      ) : null}
       {showERPConfig && <ERPScanConfig onClose={() => setShowERPConfig(false)} />}
       {showRequestForm && <EngineeringRequestForm onClose={() => setShowRequestForm(false)} />}
     </div>

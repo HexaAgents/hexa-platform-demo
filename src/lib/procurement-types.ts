@@ -1,4 +1,4 @@
-export type ProcurementSource = "erp_alert" | "engineering_request";
+export type ProcurementSource = "erp_alert" | "engineering_request" | "manual_request";
 export type ProcurementStatus =
   | "flagged"
   | "rfq_sent"
