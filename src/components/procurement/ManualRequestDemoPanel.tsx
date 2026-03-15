@@ -173,6 +173,13 @@ export default function ManualRequestDemoPanel({ item, onClose, onItemUpdate }: 
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [activeNodeId]);
 
+  // auto-advance to shipment tracking once confirmation is received
+  useEffect(() => {
+    if (activeNodeId !== "confirmation" || !confirmationReceived) return;
+    const timer = setTimeout(() => advance(), 2000);
+    return () => clearTimeout(timer);
+  }, [activeNodeId, confirmationReceived]);
+
   // auto-progression for shipment tracking
   useEffect(() => {
     if (activeNodeId !== "shipment_tracking") return;
@@ -251,7 +258,7 @@ export default function ManualRequestDemoPanel({ item, onClose, onItemUpdate }: 
       return `Send PO to ${selectedSupplier}`;
     }
     if (activeNodeId === "confirmation") {
-      return confirmationReceived ? "Track Shipment" : null;
+      return null;
     }
     if (activeNodeId === "shipment_tracking") {
       return null;
@@ -294,9 +301,7 @@ export default function ManualRequestDemoPanel({ item, onClose, onItemUpdate }: 
     ? Send
     : activeNodeId === "email_parsed"
       ? FileText
-      : activeNodeId === "confirmation" && confirmationReceived
-        ? Package
-        : Check;
+      : Check;
 
   return (
     <AnimatePresence>
