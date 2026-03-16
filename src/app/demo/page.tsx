@@ -14,6 +14,9 @@ import MiniPhone from "@/components/phone/MiniPhone";
 import AppSidebar from "@/components/AppSidebar";
 import CallList from "@/components/calls/CallList";
 import CallDetail from "@/components/calls/CallDetail";
+import CallDetailView from "@/components/calls/CallDetailView";
+import { callHistory } from "@/data/callHistory";
+import { callDetails } from "@/data/callDetails";
 
 function useWindowSize() {
   const [size, setSize] = useState({ width: 1280, height: 800 });
@@ -42,7 +45,8 @@ function DemoApp() {
   const [showIncomingCall, setShowIncomingCall] = useState(false);
   const [phonePhase, setPhonePhase] = useState<"centered" | "shrinking" | "mini">("centered");
   const [showWebApp, setShowWebApp] = useState(false);
-  const [webAppView, setWebAppView] = useState<"list" | "detail">("list");
+  const [webAppView, setWebAppView] = useState<"list" | "detail" | "completed-detail">("list");
+  const [selectedCompletedCallId, setSelectedCompletedCallId] = useState<string | null>(null);
 
   const [hexaNotificationVisible, setHexaNotificationVisible] = useState(false);
   const [hexaNotificationResponded, setHexaNotificationResponded] = useState(false);
@@ -100,11 +104,21 @@ function DemoApp() {
     goToScreen(5);
   }, [goToScreen]);
 
+  const handleSelectCompleted = useCallback((callId: string) => {
+    setSelectedCompletedCallId(callId);
+    setWebAppView("completed-detail");
+  }, []);
+
   const handleBackToList = useCallback(() => {
     setWebAppView("list");
     setCallCompleted(true);
     goToScreen(4);
   }, [goToScreen, setCallCompleted]);
+
+  const handleBackFromCompleted = useCallback(() => {
+    setWebAppView("list");
+    setSelectedCompletedCallId(null);
+  }, []);
 
   const handleCallEnd = useCallback(() => timer.stop(), [timer]);
 
@@ -190,6 +204,7 @@ function DemoApp() {
                     <CallList
                       timerFormatted={timer.formatted}
                       onSelectLiveCall={handleSelectLive}
+                      onSelectCompletedCall={handleSelectCompleted}
                       callCompleted={callCompleted}
                     />
                   </motion.div>
@@ -213,6 +228,25 @@ function DemoApp() {
                     />
                   </motion.div>
                 )}
+                {webAppView === "completed-detail" && selectedCompletedCallId && (() => {
+                  const selectedCall = callHistory.find((c) => c.id === selectedCompletedCallId);
+                  const selectedDetail = callDetails[selectedCompletedCallId];
+                  if (!selectedCall || !selectedDetail) return null;
+                  return (
+                    <motion.div key="completed-detail" className="h-full min-h-0"
+                      initial={{ opacity: 0, x: 30 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <CallDetailView
+                        call={selectedCall}
+                        detail={selectedDetail}
+                        onBack={handleBackFromCompleted}
+                      />
+                    </motion.div>
+                  );
+                })()}
               </AnimatePresence>
             </div>
           </motion.div>

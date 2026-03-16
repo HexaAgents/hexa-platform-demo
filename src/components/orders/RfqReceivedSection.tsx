@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
+import Link from "next/link";
 import { CatalogItem, Order } from "@/lib/types";
 import { LineItemsPanel } from "../LineItemsPanel";
-import { Send, Save } from "lucide-react";
+import { Send, Save, Phone, ExternalLink } from "lucide-react";
 import type { DemoContext } from "../OrderWorkspace";
 
 interface Props {
@@ -14,47 +15,63 @@ interface Props {
 
 function toCustomerQuestion(rawIssue: string): string {
   if (rawIssue.includes("No SKU provided — diameter not specified")) {
-    return "Could you confirm the required diameter and SKU for this item?";
+    return "Could you please confirm the required diameter for this item so we can match it to the correct product in our range?";
   }
   if (rawIssue.includes("Multiple sizes available")) {
     const options = rawIssue.match(/\(([^)]+)\)/)?.[1];
     return options
-      ? `Which size do you need (${options})?`
-      : "Which size do you need for this item?";
+      ? `We have this available in several sizes (${options}). Which size would you like us to include in your quote?`
+      : "This item comes in multiple sizes — could you let us know which size you need?";
   }
-  if (
-    rawIssue.includes("Source mentions both TC-25 and TC-30 — bore size unclear")
-  ) {
-    return "Should we quote TC-25 or TC-30 for the required bore size?";
+  if (rawIssue.includes("bore size unclear")) {
+    return "We offer both the 25mm and 30mm bore options for this collar. Could you confirm which bore size you require?";
   }
   if (rawIssue.includes("Price differs between options")) {
-    return "Which option should we price so we can proceed with an accurate quote?";
+    return "The pricing varies depending on which variant you go with. Could you let us know your preference so we can quote accurately?";
   }
   if (rawIssue.includes("Manual review required to resolve conflict")) {
-    return "Can you confirm the exact part/spec you want us to quote for this line?";
+    return "We'd like to make sure we quote the right specification for this line. Could you confirm the exact part or spec you need?";
   }
   if (rawIssue.includes("No matching item found in product catalog")) {
-    return "Could you share a drawing, exact part number, or additional specs for this custom spacer?";
+    return "We weren't able to find an exact match for this item in our catalogue. Could you share a drawing, part number, or any additional specifications?";
   }
   if (rawIssue.includes("Material and dimensions not specified")) {
-    return "What material and dimensions should we use for this custom spacer?";
+    return "Could you let us know the required material and dimensions so we can source this correctly?";
   }
-  if (
-    rawIssue.includes(
-      '"Custom" suggests a non-standard part — verify with customer'
-    )
-  ) {
-    return "Is this a fully custom/non-standard part, and should we quote it as a custom fabrication item?";
+  if (rawIssue.includes("non-standard part")) {
+    return "This appears to be a custom or non-standard part. Would you like us to quote it as a bespoke fabrication item?";
   }
   if (rawIssue.startsWith("Missing order fields:")) {
-    return "Could you confirm your target price/budget and the required due date for this order?";
+    return "Could you confirm your target delivery date and any budget expectations so we can finalise the quote?";
   }
-  return `Could you clarify: ${rawIssue}?`;
+  if (rawIssue.includes("standard length") || rawIssue.includes("extended length")) {
+    return "We stock both the standard and extended-length variants of this bearing. Could you confirm which version you need?";
+  }
+  if (rawIssue.includes("Confirm bearing length")) {
+    return "Just to make sure we quote the right part — do you need the standard-length or extended-length version?";
+  }
+  return `Could you help us clarify the following so we can finalise your quote: ${rawIssue}`;
+}
+
+function CallTranscriptLink({ order }: { order: Order }) {
+  if (order.source !== "phone") return null;
+  const callId = order.id.replace("ord-", "");
+  return (
+    <Link
+      href={`/calls/${callId}`}
+      className="inline-flex items-center gap-2 border border-primary/30 bg-primary/5 px-3 py-2 text-[12px] font-medium text-primary hover:bg-primary/10 transition-colors"
+    >
+      <Phone size={13} />
+      View Call Transcript
+      <ExternalLink size={11} className="text-primary/60" />
+    </Link>
+  );
 }
 
 function CompletedRfqTable({ order }: { order: Order }) {
   return (
     <div className="space-y-3">
+      <CallTranscriptLink order={order} />
       <div className="flex flex-wrap items-center gap-x-6 gap-y-1 border border-border bg-muted/20 px-4 py-3 text-[12px] text-muted-foreground">
         <span>
           Parse Confidence:{" "}
@@ -177,18 +194,24 @@ export function RfqReceivedSection({ order, mode, demoCtx }: Props) {
   }, [detectedQuestions]);
 
   const customerName = order.customer.name.split(" ")[0];
+  const isPhoneSource = order.source === "phone";
   const defaultBody = useMemo(() => {
-    let body = `Hi ${customerName},\n\nThank you for your request (${order.orderNumber}). We need a few clarifications before we can prepare your quote:\n\n`;
+    const greeting = `Dear ${customerName},`;
+    const intro = isPhoneSource
+      ? `Thank you for your call earlier regarding your requirements. We're putting your quote together now, but just need to quickly clarify one detail before we can finalise everything:`
+      : `Thank you for your enquiry (ref: ${order.orderNumber}). We're reviewing your requirements and just need to clarify a few details before we can prepare your formal quotation:`;
+
+    let body = `${greeting}\n\n${intro}\n\n`;
     emailQuestions.forEach((q, i) => {
       body += `${i + 1}. ${q}\n`;
     });
-    body += `\nCould you please confirm these details?\n\nBest regards,\nJames Morrison`;
+    body += `\nOnce we have your confirmation, we'll have the quote across to you promptly.\n\nIf you have any questions in the meantime, please don't hesitate to get in touch.\n\nKind regards,\nJames Morrison\nSales Team`;
     return body;
-  }, [customerName, order.orderNumber, emailQuestions]);
+  }, [customerName, order.orderNumber, emailQuestions, isPhoneSource]);
 
   const [emailBody, setEmailBody] = useState(defaultBody);
   const [emailSubject, setEmailSubject] = useState(
-    `${order.orderNumber} — Clarification needed for your request`
+    `${order.orderNumber} — Quick clarification needed before we finalise your quote`
   );
   const [emailSent, setEmailSent] = useState(false);
   const [clarificationAddedIds, setClarificationAddedIds] = useState<Set<string>>(new Set());
@@ -242,6 +265,7 @@ export function RfqReceivedSection({ order, mode, demoCtx }: Props) {
 
   return (
     <div className="space-y-4">
+      <CallTranscriptLink order={order} />
       <div className="border border-border bg-muted/20 px-4 py-3">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-[12px] text-muted-foreground">
           <span>

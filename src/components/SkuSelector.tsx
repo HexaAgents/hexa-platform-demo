@@ -186,11 +186,11 @@ export function SkuSelector({
           </div>
 
           {/* Scrollable list */}
-          <div className="max-h-[280px] overflow-y-auto overscroll-contain">
+          <div className="max-h-[320px] overflow-y-auto overscroll-contain">
             {/* Recommended section */}
             {filteredRecommended.length > 0 && (
               <div>
-                <div className="sticky top-0 z-10 flex items-center gap-1.5 border-b border-amber-200/30 bg-amber-50/40 px-3 py-1.5 dark:border-amber-500/10 dark:bg-amber-950/30">
+                <div className="flex items-center gap-1.5 border-b border-amber-200/30 bg-amber-50/40 px-3 py-2 dark:border-amber-500/10 dark:bg-amber-950/30">
                   <Star className="h-3 w-3 text-amber-600" />
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-700">
                     Suggested Matches
@@ -213,7 +213,7 @@ export function SkuSelector({
             )}
 
             {/* All products header */}
-            <div className="sticky top-0 z-10 border-y border-border bg-card px-3 py-1.5">
+            <div className="border-y border-border bg-card px-3 py-2">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 All Products
                 {search.trim() ? (
@@ -279,7 +279,7 @@ function SkuOptionRow({
     <button
       type="button"
       onClick={onSelect}
-      className={`flex w-full items-start gap-2.5 border-b border-border px-3 py-2 text-left transition-colors ${
+      className={`flex w-full items-center gap-3 border-b border-border px-3 py-3 text-left transition-colors cursor-pointer ${
         isSelected
           ? "bg-primary/10"
           : isRecommended
@@ -289,7 +289,7 @@ function SkuOptionRow({
     >
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <span className="shrink-0 font-mono text-[11px] font-medium text-foreground/80">
+          <span className="shrink-0 font-mono text-[12px] font-medium text-foreground/80">
             {sku}
           </span>
           <span className="text-[10px] text-muted-foreground/50">&middot;</span>
@@ -303,7 +303,7 @@ function SkuOptionRow({
               {category}
             </span>
           )}
-          <span className="truncate text-[10px] text-muted-foreground/50">
+          <span className="truncate text-[11px] text-muted-foreground/50">
             {description.length > 60
               ? description.slice(0, 60) + "…"
               : description}
@@ -311,9 +311,9 @@ function SkuOptionRow({
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        <span className="text-right text-[11px] font-medium text-foreground/70">
+        <span className="text-right text-[12px] font-medium text-foreground/70">
           ${price.toFixed(2)}
-          <span className="text-[9px] font-normal text-muted-foreground">
+          <span className="text-[10px] font-normal text-muted-foreground">
             /{uom}
           </span>
         </span>

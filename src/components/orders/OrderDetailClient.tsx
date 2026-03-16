@@ -83,7 +83,7 @@ const DEMO_BADGE_MAP: Record<string, { label: string; className: string }> = {
 
 interface Props {
   order: Order;
-  leftPanel: React.ReactNode;
+  leftPanel: React.ReactNode | null;
 }
 
 export function OrderDetailClient({ order: initialOrder, leftPanel }: Props) {
@@ -165,14 +165,20 @@ export function OrderDetailClient({ order: initialOrder, leftPanel }: Props) {
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-8 xl:grid-cols-5">
-        <div className="xl:col-span-2">
-          {leftPanel}
+      {leftPanel ? (
+        <div className="grid grid-cols-1 gap-8 xl:grid-cols-5">
+          <div className="xl:col-span-2">
+            {leftPanel}
+          </div>
+          <div className="xl:col-span-3">
+            <OrderWorkspace order={order} demoCtx={demoCtx} />
+          </div>
         </div>
-        <div className="xl:col-span-3">
+      ) : (
+        <div>
           <OrderWorkspace order={order} demoCtx={demoCtx} />
         </div>
-      </div>
+      )}
     </>
   );
 }

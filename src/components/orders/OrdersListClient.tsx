@@ -102,7 +102,7 @@ type DateSort = "newest" | "oldest";
 
 export function OrdersListClient({ orders }: { orders: Order[] }) {
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [sourceFilter, setSourceFilter] = useState<string>("all");
+  const [sourceFilter, setSourceFilter] = useState<string>("email");
   const [dateSort, setDateSort] = useState<DateSort>("newest");
 
   const availableStages = useMemo(() => {

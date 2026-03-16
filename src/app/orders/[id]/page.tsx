@@ -35,9 +35,11 @@ export default async function OrderDetailPage({
       <OrderDetailClient
         order={order}
         leftPanel={
-          <div className="border border-border bg-card p-6 shadow-sm">
-            <AttachmentViewer attachments={order.attachments ?? []} />
-          </div>
+          order.source !== "phone" ? (
+            <div className="border border-border bg-card p-6 shadow-sm">
+              <AttachmentViewer attachments={order.attachments ?? []} />
+            </div>
+          ) : null
         }
       />
     </div>

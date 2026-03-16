@@ -1,7 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { CheckCircle2, Search, Phone } from "lucide-react";
+import { CheckCircle2, Search, Phone, ChevronRight } from "lucide-react";
 import Timer from "@/components/shared/Timer";
 import { callHistory, type CallRecord } from "@/data/callHistory";
 import { Badge } from "@/components/ui/badge";
@@ -13,11 +14,26 @@ import { cn } from "@/lib/utils";
 interface CallListProps {
   timerFormatted?: string;
   onSelectLiveCall?: () => void;
+  onSelectCompletedCall?: (callId: string) => void;
   callCompleted?: boolean;
 }
 
-export default function CallList({ timerFormatted = "", onSelectLiveCall, callCompleted }: CallListProps) {
+export default function CallList({ timerFormatted = "", onSelectLiveCall, onSelectCompletedCall, callCompleted }: CallListProps) {
   const standalone = !onSelectLiveCall;
+  const router = useRouter();
+
+  const handleCallClick = (call: CallRecord) => {
+    if (call.status === "live" && !standalone) {
+      onSelectLiveCall?.();
+    } else if (call.status === "completed") {
+      if (onSelectCompletedCall) {
+        onSelectCompletedCall(call.id);
+      } else {
+        router.push(`/calls/${call.id}`);
+      }
+    }
+  };
+
   return (
     <div className="flex h-full flex-col bg-card">
       <div className="flex items-center justify-between border-b border-border px-7 py-4">
@@ -52,21 +68,28 @@ export default function CallList({ timerFormatted = "", onSelectLiveCall, callCo
 
       <ScrollArea className="flex-1">
         <div className="space-y-1.5 px-4 py-3">
-          {callHistory.map((call, i) => (
-            <motion.div
-              key={call.id}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.06, duration: 0.3, ease: "easeOut" }}
-            >
-              <CallCard
-                call={call}
-                timerFormatted={timerFormatted}
-                onClick={call.status === "live" && !standalone ? onSelectLiveCall : undefined}
-                isCompleted={standalone || (callCompleted && call.status === "live")}
-              />
-            </motion.div>
-          ))}
+          {callHistory
+          .filter((call) => !standalone || call.status !== "live")
+          .map((call, i) => {
+            const isClickable =
+              (call.status === "live" && !standalone) ||
+              call.status === "completed";
+            return (
+              <motion.div
+                key={call.id}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.06, duration: 0.3, ease: "easeOut" }}
+              >
+                <CallCard
+                  call={call}
+                  timerFormatted={timerFormatted}
+                  onClick={isClickable ? () => handleCallClick(call) : undefined}
+                  isCompleted={standalone || (callCompleted && call.status === "live")}
+                />
+              </motion.div>
+            );
+          })}
         </div>
       </ScrollArea>
     </div>
@@ -151,6 +174,12 @@ function CallCard({
             </div>
           )}
         </div>
+
+        {onClick && !isLive && (
+          <div className="w-6 flex justify-end">
+            <ChevronRight size={14} className="text-muted-foreground/50 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-foreground/50" />
+          </div>
+        )}
       </div>
     </button>
   );

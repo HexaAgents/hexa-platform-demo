@@ -2,10 +2,11 @@
 
 import { useReducer, useEffect, useCallback, useRef } from "react";
 import type { Order } from "@/lib/types";
-import { DEMO_STEPS, isDemoEligible } from "@/lib/demo-flow-steps";
+import { getDemoSteps, isDemoEligible, getStartStepIndex, type DemoStep } from "@/lib/demo-flow-steps";
 
 interface DemoState {
   order: Order;
+  steps: DemoStep[];
   stepIndex: number;
   isAutoProgressing: boolean;
 }
@@ -17,10 +18,11 @@ type DemoAction =
 function reducer(state: DemoState, action: DemoAction): DemoState {
   switch (action.type) {
     case "advance": {
-      const nextStep = DEMO_STEPS[state.stepIndex];
+      const nextStep = state.steps[state.stepIndex];
       if (!nextStep) return state;
       const newOrder = nextStep.apply(state.order);
       return {
+        ...state,
         order: newOrder,
         stepIndex: state.stepIndex + 1,
         isAutoProgressing: false,
@@ -36,9 +38,13 @@ function reducer(state: DemoState, action: DemoAction): DemoState {
 export function useOrderDemoFlow(initialOrder: Order) {
   const eligible = isDemoEligible(initialOrder);
 
+  const steps = eligible ? getDemoSteps(initialOrder) : [];
+  const startIndex = eligible ? getStartStepIndex(initialOrder) : 0;
+
   const [state, dispatch] = useReducer(reducer, {
     order: initialOrder,
-    stepIndex: 0,
+    steps,
+    stepIndex: startIndex,
     isAutoProgressing: false,
   });
 
@@ -52,7 +58,7 @@ export function useOrderDemoFlow(initialOrder: Order) {
   useEffect(() => {
     if (!eligible) return;
 
-    const nextStep = DEMO_STEPS[state.stepIndex];
+    const nextStep = state.steps[state.stepIndex];
     if (!nextStep || nextStep.type !== "auto") return;
 
     dispatch({ type: "set_auto_progressing", value: true });
@@ -64,10 +70,10 @@ export function useOrderDemoFlow(initialOrder: Order) {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [state.stepIndex, eligible]);
+  }, [state.stepIndex, eligible, state.steps]);
 
-  const currentStepId = DEMO_STEPS[state.stepIndex]?.id ?? "complete";
-  const isComplete = state.stepIndex >= DEMO_STEPS.length;
+  const currentStepId = state.steps[state.stepIndex]?.id ?? "complete";
+  const isComplete = state.stepIndex >= state.steps.length;
 
   return {
     order: eligible ? state.order : initialOrder,
