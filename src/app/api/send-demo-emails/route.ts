@@ -177,6 +177,30 @@ export async function POST() {
       errors.push("po-mismatch-q-2026-0047.pdf not found");
     }
 
+    // Email 5: Procurement request — Pneumatic Cylinder (Packaging Line 2)
+    await transporter.sendMail({
+      from: `"Sarah Chen - Production Engineering" <${user}>`,
+      to,
+      subject:
+        "Parts needed — Packaging Line 2 actuator replacement",
+      text: [
+        "Hi Procurement,",
+        "",
+        "We need the following parts for the Packaging Line 2 actuator replacement project. The current cylinders are failing intermittently and we need replacements before the April production ramp.",
+        "",
+        "- 12× Pneumatic Cylinder, 40mm bore, 200mm stroke (double-acting, magnetic piston)",
+        "- 12× Mounting bracket kits for the above cylinders",
+        '- 6× 5/3 way solenoid valves, ¼" NPT ports',
+        "",
+        "Target delivery by end of March if possible. Let me know if you need any additional specs.",
+        "",
+        "Thanks,",
+        "Sarah Chen",
+        "Production Engineering",
+      ].join("\n"),
+    });
+    sent.push("Procurement Request (Pneumatic Cylinder)");
+
     if (sent.length === 0) {
       return NextResponse.json(
         {
