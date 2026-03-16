@@ -228,4 +228,5 @@ export interface ProcurementDemoData {
   selectedQuoteId?: string;
   po?: PurchaseOrder & { supplier: Supplier };
   shipment?: ProcurementDemoShipment;
+  confirmationReceived?: boolean;
 }

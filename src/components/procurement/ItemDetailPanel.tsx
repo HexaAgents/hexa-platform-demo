@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Package, Wrench, Calendar, Mail, Clock, Star, FileText, ArrowLeftRight, FileDown, Table2 } from "lucide-react";
+import { X, Package, Wrench, Calendar, Mail, Clock, Star, FileText, ArrowLeftRight, FileDown, Table2, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -55,7 +55,7 @@ const stageDisplayNames: Record<ProcurementStatus, string> = {
   quotes_received: "Quotes Received",
   po_sent: "Shipment Tracking",
   shipped: "Shipment Tracking",
-  delivered: "Delivery Confirmed",
+  delivered: "Delivery Received",
 };
 
 const statusBadgeClass: Record<ProcurementStatus, string> = {
@@ -104,13 +104,42 @@ interface ItemDetailPanelProps {
   onItemUpdate?: (item: ProcurementItem) => void;
 }
 
-function getItemStages(item: ProcurementItem, demoPath: "rfq" | "po" | null): ProcurementStatus[] {
+type ItemStage = ProcurementStatus | "po_confirmation" | "po_accepted";
+
+const stageDisplayNamesExt: Record<ItemStage, string> = {
+  ...stageDisplayNames,
+  po_confirmation: "Supplier Confirmation",
+  po_accepted: "Purchase Order Accepted",
+};
+
+function getItemStages(
+  item: ProcurementItem,
+  demoPath: "rfq" | "po" | null,
+  demoData: { confirmationReceived?: boolean },
+): ItemStage[] {
   const hasRfqPath = demoPath === "rfq" || !!item.activeRfqId;
-  const allStages: ProcurementStatus[] = hasRfqPath
-    ? ["flagged", "rfq_sent", "quotes_received", "po_sent", "delivered"]
-    : ["flagged", "po_sent", "delivered"];
-  const effectiveStatus = item.status === "shipped" ? "po_sent" : item.status;
-  const currentIdx = allStages.indexOf(effectiveStatus);
+  const isDelivered = item.status === "delivered";
+
+  const allStages: ItemStage[] = hasRfqPath
+    ? isDelivered
+      ? ["flagged", "rfq_sent", "quotes_received", "po_accepted", "po_sent", "delivered"]
+      : ["flagged", "rfq_sent", "quotes_received", "po_confirmation", "po_sent", "delivered"]
+    : isDelivered
+      ? ["flagged", "po_accepted", "po_sent", "delivered"]
+      : ["flagged", "po_confirmation", "po_sent", "delivered"];
+
+  let effectiveStage: ItemStage;
+  if (isDelivered) {
+    effectiveStage = "delivered";
+  } else if (item.status === "shipped") {
+    effectiveStage = "po_sent";
+  } else if (item.status === "po_sent") {
+    effectiveStage = demoData.confirmationReceived ? "po_sent" : "po_confirmation";
+  } else {
+    effectiveStage = item.status;
+  }
+
+  const currentIdx = allStages.indexOf(effectiveStage);
   if (currentIdx === -1) return ["flagged"];
   return allStages.slice(0, currentIdx + 1).reverse();
 }
@@ -195,14 +224,22 @@ export default function ItemDetailPanel({ item: initialItem, onClose, onItemUpda
 
   const supplierHistories = useMemo(() => getSupplierHistoriesForItem(initialItem.id), [initialItem.id]);
 
-  const stages = useMemo(() => getItemStages(item, demoPath), [item, demoPath]);
+  const stages = useMemo(
+    () => getItemStages(item, demoPath, demoData),
+    [item, demoPath, demoData],
+  );
 
   const scrollTopRef = useRef<HTMLDivElement>(null);
   const prevStatusRef = useRef(item.status);
+  const prevConfirmationRef = useRef(demoData.confirmationReceived);
 
   useEffect(() => {
-    if (item.status !== prevStatusRef.current) {
-      prevStatusRef.current = item.status;
+    const statusChanged = item.status !== prevStatusRef.current;
+    const confirmationChanged = demoData.confirmationReceived !== prevConfirmationRef.current;
+    prevStatusRef.current = item.status;
+    prevConfirmationRef.current = demoData.confirmationReceived;
+
+    if (statusChanged || confirmationChanged) {
       requestAnimationFrame(() => {
         const viewport = scrollTopRef.current?.closest(
           '[data-slot="scroll-area-viewport"]',
@@ -212,7 +249,7 @@ export default function ItemDetailPanel({ item: initialItem, onClose, onItemUpda
         }
       });
     }
-  }, [item.status]);
+  }, [item.status, demoData.confirmationReceived]);
 
   const handleToggleSupplier = (id: string) => {
     setSelectedSupplierIds((prev) => {
@@ -238,17 +275,25 @@ export default function ItemDetailPanel({ item: initialItem, onClose, onItemUpda
     advance(selectedQuoteId ?? undefined);
   }, [advance, selectedQuoteId]);
 
-  function getStageSummary(stage: ProcurementStatus): string {
+  function getStageSummary(stage: ItemStage): string {
     switch (stage) {
       case "delivered":
         return po
           ? `Received at dock — $${po.totalPrice.toLocaleString()} total, ${Math.round((new Date().getTime() - new Date(initialItem.flaggedAt).getTime()) / 86400000)}d from flag`
-          : "Delivery confirmed";
+          : "Delivery received";
       case "shipped":
       case "po_sent":
         return po
           ? `$${po.totalPrice.toLocaleString()} to ${po.supplier.name} on ${formatShortDate(po.sentAt ?? po.createdAt)}`
           : "PO sent to supplier";
+      case "po_accepted":
+        return po
+          ? `PO accepted by ${po.supplier.name} — $${po.totalPrice.toLocaleString()}, confirmed in stock`
+          : "Purchase order accepted by supplier";
+      case "po_confirmation":
+        return po
+          ? `PO confirmed by ${po.supplier.name} — all items in stock, shipping within 2 days`
+          : "Supplier confirmed the purchase order";
       case "quotes_received": {
         const winner = selectedQuote ?? quotes.find((q) => q.id === item.selectedQuoteId);
         return winner
@@ -268,12 +313,16 @@ export default function ItemDetailPanel({ item: initialItem, onClose, onItemUpda
     }
   }
 
-  function getStageDate(stage: ProcurementStatus): string | undefined {
+  function getStageDate(stage: ItemStage): string | undefined {
     switch (stage) {
       case "delivered":
         return demoData.shipment?.latestEventAt ?? "2026-03-04T14:10:00Z";
       case "shipped":
       case "po_sent":
+        return po?.sentAt ?? po?.createdAt;
+      case "po_accepted":
+        return po?.sentAt ?? po?.createdAt;
+      case "po_confirmation":
         return po?.sentAt ?? po?.createdAt;
       case "quotes_received":
         return quotes.length > 0 ? quotes[quotes.length - 1].receivedAt : undefined;
@@ -286,13 +335,17 @@ export default function ItemDetailPanel({ item: initialItem, onClose, onItemUpda
     }
   }
 
-  function renderStageContent(stage: ProcurementStatus, isActive: boolean) {
+  function renderStageContent(stage: ItemStage, isActive: boolean) {
     switch (stage) {
       case "delivered":
         return renderDelivered();
       case "shipped":
       case "po_sent":
         return renderShippingStage(isActive);
+      case "po_accepted":
+        return renderPOAccepted();
+      case "po_confirmation":
+        return renderConfirmation(isActive);
       case "quotes_received":
         return renderQuotesReceived(isActive);
       case "rfq_sent":
@@ -321,6 +374,100 @@ export default function ItemDetailPanel({ item: initialItem, onClose, onItemUpda
     );
   }
 
+  function renderPOAccepted() {
+    const supplierName = po?.supplier.name ?? "Supplier";
+    const supplierEmail = po?.supplier.contactEmail ?? "";
+
+    return (
+      <div className="space-y-4">
+        {po && <POPreviewSection po={po} item={initialItem} isReadOnly />}
+        {po?.quoteId && selectedQuote && (
+          <POQuoteVerification po={po} quote={selectedQuote} />
+        )}
+        <div className="border border-border bg-card">
+          <div className="flex items-center gap-2.5 border-b border-border px-5 py-3">
+            <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-none border border-emerald-500/40 bg-emerald-500/10">
+              <Check className="h-2.5 w-2.5 text-emerald-600" strokeWidth={3} />
+            </div>
+            <span className="text-[12px] font-semibold text-foreground/70">Supplier Confirmation</span>
+          </div>
+          <div className="space-y-1.5 border-b border-border px-5 py-3.5">
+            <div className="flex items-baseline gap-3 text-[12px]">
+              <span className="w-12 shrink-0 text-right text-muted-foreground">From</span>
+              <span className="text-foreground/85">{supplierName} &lt;{supplierEmail}&gt;</span>
+            </div>
+            <div className="flex items-baseline gap-3 text-[12px]">
+              <span className="w-12 shrink-0 text-right text-muted-foreground">Subject</span>
+              <span className="font-medium text-foreground/85">RE: Purchase Order — {initialItem.name}</span>
+            </div>
+          </div>
+          <div className="px-5 py-4">
+            <p className="text-[12px] leading-relaxed text-foreground/75">
+              Dear Hexa Procurement Team,<br /><br />
+              <span className="bg-emerald-500/15 text-emerald-900 font-medium px-1 py-0.5">
+                We confirm receipt of your purchase order for ${po?.totalPrice.toLocaleString() ?? "—"}. All items are in stock and will ship within 2 business days.
+              </span><br /><br />
+              Expected delivery: <span className="font-medium text-foreground/85">{po?.expectedDelivery ? new Date(po.expectedDelivery).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "TBD"}</span><br /><br />
+              Thank you for your business.<br /><br />
+              Best regards,<br />
+              {supplierName} — Order Desk
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function renderConfirmation(isActive: boolean) {
+    const supplierName = po?.supplier.name ?? "Supplier";
+    const supplierEmail = po?.supplier.contactEmail ?? "";
+
+    if (isActive && !demoData.confirmationReceived) {
+      return (
+        <div className="border border-border bg-card px-5 py-6">
+          <div className="flex items-center gap-3">
+            <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+            <div>
+              <p className="text-[13px] font-medium text-foreground">
+                Waiting for confirmation from {supplierName}...
+              </p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                Typically responds within 2–4 hours
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="border border-border bg-card">
+        <div className="space-y-1.5 border-b border-border px-5 py-3.5">
+          <div className="flex items-baseline gap-3 text-[12px]">
+            <span className="w-12 shrink-0 text-right text-muted-foreground">From</span>
+            <span className="text-foreground/85">{supplierName} &lt;{supplierEmail}&gt;</span>
+          </div>
+          <div className="flex items-baseline gap-3 text-[12px]">
+            <span className="w-12 shrink-0 text-right text-muted-foreground">Subject</span>
+            <span className="font-medium text-foreground/85">RE: Purchase Order — {initialItem.name}</span>
+          </div>
+        </div>
+        <div className="px-5 py-4">
+          <p className="text-[12px] leading-relaxed text-foreground/75">
+            Dear Hexa Procurement Team,<br /><br />
+            <span className="bg-emerald-500/15 text-emerald-900 font-medium px-1 py-0.5">
+              We confirm receipt of your purchase order for ${po?.totalPrice.toLocaleString() ?? "—"}. All items are in stock and will ship within 2 business days.
+            </span><br /><br />
+            Expected delivery: <span className="font-medium text-foreground/85">{po?.expectedDelivery ? new Date(po.expectedDelivery).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "TBD"}</span><br /><br />
+            Thank you for your business.<br /><br />
+            Best regards,<br />
+            {supplierName} — Order Desk
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   function renderShippingStage(isActive: boolean) {
     const trackingPanel = demoData.shipment ? (
       <ProcurementShipmentPanel
@@ -339,13 +486,15 @@ export default function ItemDetailPanel({ item: initialItem, onClose, onItemUpda
       return <p className="text-[13px] text-muted-foreground">PO data not available</p>;
     }
 
+    const showPODetails = item.status !== "delivered";
+
     return (
       <div className="space-y-4">
         {trackingPanel}
-        {!isActive && po && (
+        {!isActive && showPODetails && po && (
           <POPreviewSection po={po} item={initialItem} isReadOnly />
         )}
-        {!isActive && po?.quoteId && selectedQuote && (
+        {!isActive && showPODetails && po?.quoteId && selectedQuote && (
           <POQuoteVerification po={po} quote={selectedQuote} />
         )}
       </div>
@@ -672,10 +821,14 @@ export default function ItemDetailPanel({ item: initialItem, onClose, onItemUpda
                 {stages.map((stage, idx) => {
                   const isActive = idx === 0;
                   const isLast = idx === stages.length - 1;
+                  const stageName =
+                    stage === "po_confirmation" && isActive && demoData.confirmationReceived
+                      ? `PO Confirmed by ${po?.supplier.name ?? "Supplier"}`
+                      : stageDisplayNamesExt[stage];
                   return (
                     <StageSection
-                      key={`${stage}-${item.status}`}
-                      stageName={stageDisplayNames[stage]}
+                      key={`${stage}-${item.status}-${demoData.confirmationReceived}`}
+                      stageName={stageName}
                       isActive={isActive}
                       completedDate={!isActive ? getStageDate(stage) : undefined}
                       summary={!isActive ? getStageSummary(stage) : undefined}
@@ -698,6 +851,7 @@ export default function ItemDetailPanel({ item: initialItem, onClose, onItemUpda
             orderMode={orderMode}
             isAutoProgressing={isAutoProgressing}
             isDemoActive={item.status !== "delivered"}
+            confirmationReceived={!!demoData.confirmationReceived}
             onClose={onClose}
             onSendRFQ={handleSendRFQ}
             onSendPO={handleSendPO}

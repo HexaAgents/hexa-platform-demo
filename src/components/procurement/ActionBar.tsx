@@ -13,6 +13,7 @@ interface ActionBarProps {
   orderMode?: "po" | "rfq";
   isAutoProgressing?: boolean;
   isDemoActive?: boolean;
+  confirmationReceived?: boolean;
   onClose: () => void;
   onSendRFQ?: () => void;
   onSendPO?: () => void;
@@ -27,6 +28,7 @@ export default function ActionBar({
   orderMode = "po",
   isAutoProgressing = false,
   isDemoActive = false,
+  confirmationReceived = false,
   onClose,
   onSendRFQ,
   onSendPO,
@@ -78,11 +80,13 @@ export default function ActionBar({
     const waitMessage =
       status === "rfq_sent"
         ? "Waiting for supplier quotes..."
-        : status === "po_sent"
-          ? "Supplier processing order..."
-          : status === "shipped"
-            ? "Tracking updates arriving..."
-            : "Processing...";
+        : status === "po_sent" && !confirmationReceived
+          ? "Awaiting supplier confirmation..."
+          : status === "po_sent" && confirmationReceived
+            ? "Confirmation received — preparing shipment..."
+            : status === "shipped"
+              ? "Tracking updates arriving..."
+              : "Processing...";
 
     return (
       <div className="flex-none border-t border-blue-500/20 bg-blue-500/5 px-7 py-4">
@@ -112,7 +116,7 @@ export default function ActionBar({
         <div className="flex items-center gap-3">
           <div className="inline-flex items-center gap-2 bg-emerald-600 px-5 py-2.5 text-[13px] font-medium text-white">
             <Check className="h-3.5 w-3.5" />
-            Delivery Complete
+            Delivery Received
           </div>
           <p className="text-[12px] text-emerald-700/70">Items received and checked in at dock</p>
           <div className="flex-1" />

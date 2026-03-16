@@ -32,10 +32,10 @@ export default function DeliveryConfirmationBanner({
         </div>
         <div>
           <h3 className="text-[14px] font-semibold text-emerald-900">
-            Delivery Confirmed
+            Delivery Received
           </h3>
           <p className="text-[12px] text-emerald-700/70">
-            Items received and checked in at dock
+            Order received and checked in at dock
           </p>
         </div>
       </div>

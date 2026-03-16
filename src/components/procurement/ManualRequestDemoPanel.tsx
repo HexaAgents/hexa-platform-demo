@@ -221,9 +221,14 @@ export default function ManualRequestDemoPanel({ item, onClose, onItemUpdate }: 
     });
   };
 
-  const visibleIndices = Array.from({ length: activeIndex + 1 }, (_, i) => i).reverse();
   const isShipmentDelivered = shipmentStatus === "delivered";
   const isComplete = activeNodeId === "shipment_tracking" && isShipmentDelivered;
+
+  const CONFIRMATION_INDEX = NODE_IDS.indexOf("confirmation");
+
+  const visibleIndices = Array.from({ length: activeIndex + 1 }, (_, i) => i)
+    .filter((i) => !(isComplete && i === CONFIRMATION_INDEX))
+    .reverse();
   const isWaitingConfirmation = activeNodeId === "confirmation" && !confirmationReceived;
   const isShipmentAutoProgressing = activeNodeId === "shipment_tracking" && !isShipmentDelivered;
 
@@ -233,7 +238,9 @@ export default function ManualRequestDemoPanel({ item, onClose, onItemUpdate }: 
       case "supplier_selection":
         return `${selectedSupplier} selected — $${chosenQuote.total.toLocaleString()} total`;
       case "po_sent":
-        return `PO sent to ${selectedSupplier} — $${chosenQuote.total.toLocaleString()}`;
+        return isComplete
+          ? `PO accepted by ${selectedSupplier} — $${chosenQuote.total.toLocaleString()}, confirmed in stock`
+          : `PO sent to ${selectedSupplier} — $${chosenQuote.total.toLocaleString()}`;
       case "confirmation":
         return `PO confirmed by ${selectedSupplier}`;
       case "shipment_tracking":
@@ -244,11 +251,14 @@ export default function ManualRequestDemoPanel({ item, onClose, onItemUpdate }: 
   }
 
   function getNodeTitle(nodeId: NodeId): string {
+    if (nodeId === "po_sent" && isComplete) {
+      return "Purchase Order Accepted";
+    }
     if (nodeId === "confirmation" && confirmationReceived) {
       return `PO Confirmation Received from ${selectedSupplier}`;
     }
     if (nodeId === "shipment_tracking" && isShipmentDelivered) {
-      return "Delivery Confirmed";
+      return "Delivery Received";
     }
     return NODE_TITLES[nodeId];
   }
@@ -281,7 +291,44 @@ export default function ManualRequestDemoPanel({ item, onClose, onItemUpdate }: 
           />
         );
       case "po_sent":
-        return <POSentContent supplier={chosenSupplierInfo} quote={chosenQuote} />;
+        return isComplete ? (
+          <div className="space-y-4">
+            <POSentContent supplier={chosenSupplierInfo} quote={chosenQuote} />
+            <div className="border border-border bg-card">
+              <div className="flex items-center gap-2.5 border-b border-border px-5 py-3">
+                <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-none border border-emerald-500/40 bg-emerald-500/10">
+                  <Check className="h-2.5 w-2.5 text-emerald-600" strokeWidth={3} />
+                </div>
+                <span className="text-[12px] font-semibold text-foreground/70">Supplier Confirmation</span>
+              </div>
+              <div className="space-y-1.5 border-b border-border px-5 py-3.5">
+                <div className="flex items-baseline gap-3 text-[12px]">
+                  <span className="w-12 shrink-0 text-right text-muted-foreground">From</span>
+                  <span className="text-foreground/85">{chosenSupplierInfo.name} &lt;{chosenSupplierInfo.email}&gt;</span>
+                </div>
+                <div className="flex items-baseline gap-3 text-[12px]">
+                  <span className="w-12 shrink-0 text-right text-muted-foreground">Subject</span>
+                  <span className="font-medium text-foreground/85">RE: Purchase Order — Pneumatic Cylinder Package</span>
+                </div>
+              </div>
+              <div className="px-5 py-4">
+                <p className="text-[12px] leading-relaxed text-foreground/75">
+                  Dear Hexa Procurement Team,<br /><br />
+                  <span className="bg-emerald-500/15 text-emerald-900 font-medium px-1 py-0.5">
+                    We confirm receipt of your purchase order for ${chosenQuote.total.toLocaleString()}. All items are in stock and will ship within 2 business days.
+                  </span><br /><br />
+                  Expected ship date: <span className="font-medium text-foreground/85">{shipDateForSupplier(chosenQuote.leadDays)}</span><br />
+                  Estimated arrival: <span className="font-medium text-foreground/85">{deliveryDateForSupplier(chosenQuote.leadDays)}</span><br /><br />
+                  Thank you for your business.<br /><br />
+                  Best regards,<br />
+                  {chosenSupplierInfo.name} — Order Desk
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <POSentContent supplier={chosenSupplierInfo} quote={chosenQuote} />
+        );
       case "confirmation":
         return <ConfirmationContent received={confirmationReceived} supplier={chosenSupplierInfo} quote={chosenQuote} />;
       case "shipment_tracking":
@@ -465,7 +512,7 @@ export default function ManualRequestDemoPanel({ item, onClose, onItemUpdate }: 
                 <>
                   <div className="inline-flex items-center gap-2 bg-emerald-600 px-5 py-2.5 text-[13px] font-medium text-white">
                     <Check className="h-3.5 w-3.5" />
-                    Delivery Complete
+                    Delivery Received
                   </div>
                   <p className="text-[12px] text-emerald-700/70">
                     Procurement workflow complete — order from {selectedSupplier} has been delivered

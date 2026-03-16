@@ -190,6 +190,18 @@ function buildPODirect(
   };
 }
 
+const CONFIRMATION_STEP: ProcurementDemoStep = {
+  id: "po_confirmation",
+  type: "auto",
+  delayMs: 4000,
+  resultStatus: "po_sent",
+  label: "Supplier Confirmation",
+  apply: (item, data) => ({
+    item,
+    data: { ...data, confirmationReceived: true },
+  }),
+};
+
 const SHIPPING_STEPS: ProcurementDemoStep[] = [
   {
     id: "shipping_created",
@@ -380,6 +392,7 @@ export const RFQ_PATH_STEPS: ProcurementDemoStep[] = [
       };
     },
   },
+  CONFIRMATION_STEP,
   ...SHIPPING_STEPS,
 ];
 
@@ -408,6 +421,7 @@ export const DIRECT_PO_PATH_STEPS: ProcurementDemoStep[] = [
       };
     },
   },
+  CONFIRMATION_STEP,
   ...SHIPPING_STEPS,
 ];
 
@@ -416,15 +430,15 @@ const STATUS_TO_RFQ_STEP_INDEX: Record<string, number> = {
   rfq_sent: 1,
   quotes_received: 2,
   po_sent: 3,
-  shipped: 3,
-  delivered: 9,
+  shipped: 4,
+  delivered: 10,
 };
 
 const STATUS_TO_PO_STEP_INDEX: Record<string, number> = {
   flagged: 0,
   po_sent: 1,
-  shipped: 1,
-  delivered: 7,
+  shipped: 2,
+  delivered: 8,
 };
 
 export function getStartingStepIndex(
