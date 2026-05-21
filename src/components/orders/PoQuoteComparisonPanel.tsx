@@ -51,7 +51,11 @@ export function PoQuoteComparisonPanel({ order, demoCtx }: Props) {
 
   if (!flow) return null;
 
-  if (flow.scenario === "rfq_csv" || flow.scenario === "rfq_handwritten") {
+  if (
+    flow.scenario === "rfq_csv" ||
+    flow.scenario === "rfq_handwritten" ||
+    flow.scenario === "rfq_quick"
+  ) {
     const comparison = flow.quoteComparison;
     const hasMismatch = comparison ? !comparison.overallMatch : false;
 

@@ -4,7 +4,7 @@ import { useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { CatalogItem, Order } from "@/lib/types";
 import { LineItemsPanel } from "../LineItemsPanel";
-import { Send, Save, Phone, ExternalLink, Layers } from "lucide-react";
+import { Send, Save, Phone, ExternalLink, Layers, Check, FileText } from "lucide-react";
 import type { DemoContext, StageChangeHandler } from "../OrderWorkspace";
 
 interface Props {
@@ -221,6 +221,14 @@ export function RfqReceivedSection({ order, mode, demoCtx, onStageChange }: Prop
   const [clarificationAddedIds, setClarificationAddedIds] = useState<Set<string>>(new Set());
   const [startingBom, setStartingBom] = useState(false);
 
+  const isQuickDemo = order.demoFlow?.scenario === "rfq_quick";
+
+  const handleCreateQuote = useCallback(() => {
+    if (demoCtx && demoCtx.stepId === "create_quote") {
+      demoCtx.advance();
+    }
+  }, [demoCtx]);
+
   const handleAddClarification = useCallback(
     (lineItemId: string, question: string) => {
       setClarificationAddedIds((prev) => {
@@ -268,7 +276,44 @@ export function RfqReceivedSection({ order, mode, demoCtx, onStageChange }: Prop
     return <CompletedRfqTable order={order} />;
   }
 
-  const buildDetailedQuoteBlock = allResolved ? (
+  const quickDemoBlock = isQuickDemo ? (
+    <div className="border border-emerald-500/20 bg-emerald-500/5 p-4 space-y-3">
+      <div className="flex items-start gap-3">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center border border-emerald-500/40 bg-emerald-500/10">
+          <Check className="h-3 w-3 text-emerald-600" strokeWidth={3} />
+        </div>
+        <div className="flex-1">
+          <p className="text-[13px] font-semibold text-emerald-800">
+            All line items extracted &amp; matched to catalogue
+          </p>
+          <ul className="mt-1 space-y-0.5 text-[11px] text-emerald-700/80">
+            <li className="flex items-center gap-1.5">
+              <Check className="h-3 w-3 text-emerald-600" strokeWidth={3} />
+              {totalCount} of {totalCount} items confirmed
+            </li>
+            <li className="flex items-center gap-1.5">
+              <Check className="h-3 w-3 text-emerald-600" strokeWidth={3} />
+              Quantities checked against stock
+            </li>
+            <li className="flex items-center gap-1.5">
+              <Check className="h-3 w-3 text-emerald-600" strokeWidth={3} />
+              Pricing checked against catalogue
+            </li>
+          </ul>
+        </div>
+        <button
+          type="button"
+          onClick={handleCreateQuote}
+          className="inline-flex items-center gap-2 bg-foreground px-4 py-2.5 text-[12px] font-medium text-background transition-opacity hover:opacity-90 shrink-0"
+        >
+          <FileText className="h-3.5 w-3.5" />
+          Create Quote
+        </button>
+      </div>
+    </div>
+  ) : null;
+
+  const buildDetailedQuoteBlock = !isQuickDemo && allResolved ? (
     <div className="border border-emerald-500/20 bg-emerald-500/5 p-4 space-y-3">
       <div className="flex items-center gap-3">
         <div className="flex h-5 w-5 shrink-0 items-center justify-center border border-emerald-500/40 bg-emerald-500/10">
@@ -306,6 +351,7 @@ export function RfqReceivedSection({ order, mode, demoCtx, onStageChange }: Prop
     <div className="space-y-4">
       <CallTranscriptLink order={order} />
 
+      {quickDemoBlock}
       {buildDetailedQuoteBlock}
 
       <div className="border border-border bg-background shadow-sm px-4 py-3">
@@ -366,7 +412,7 @@ export function RfqReceivedSection({ order, mode, demoCtx, onStageChange }: Prop
         />
       </div>
 
-      {(detectedQuestions.length > 0 || clarificationAddedIds.size > 0) && (
+      {!isQuickDemo && (detectedQuestions.length > 0 || clarificationAddedIds.size > 0) && (
         <div className="space-y-3 border border-border bg-background shadow-sm p-5">
           <h4 className="text-[12px] font-semibold uppercase tracking-wide text-amber-800">
             Clarification Questions Detected ({detectedQuestions.length})

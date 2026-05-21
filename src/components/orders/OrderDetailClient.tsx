@@ -36,6 +36,7 @@ const DETAIL_STAGE_CONFIG: Record<OrderStage, { label: string; dot: string }> = 
 };
 
 const DEMO_BADGE_MAP: Record<string, { label: string; dot: string }> = {
+  create_quote:                  { label: "RFQ Received",          dot: "bg-blue-500" },
   clarification_sent:            { label: "RFQ Received",          dot: "bg-blue-500" },
   clarification_reply:           { label: "Awaiting Clarification", dot: "bg-amber-500" },
   quote_sent:                    { label: "Quote Draft",           dot: "bg-violet-500" },

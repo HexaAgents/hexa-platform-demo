@@ -1,6 +1,115 @@
 import { Order } from "./types";
 
 export const mockOrders: Order[] = [
+  // 0. Quick demo — Ravi Patel @ Summit Fabrication (handwritten RFQ, compressed flow)
+  {
+    id: "ord-demo-quick-001",
+    orderNumber: "ORD-2026-0099",
+    stage: "rfq_received",
+    source: "email",
+    createdAt: "2026-03-30T18:43:00Z",
+    emailSubject: "Handwritten RFQ — urgent line setup",
+    customer: {
+      id: "cust-summit-ravi",
+      name: "Ravi Patel",
+      email: "mann.patira@gmail.com",
+      phone: "+1 (555) 778-4010",
+      company: "Summit Fabrication",
+      billingAddress: "22 Foundry Lane, Pittsburgh, PA 15201",
+      shippingAddress: "22 Foundry Lane, Dock 2, Pittsburgh, PA 15201",
+    },
+    attachments: [
+      {
+        id: "att-demo-quick-001",
+        fileName: "RFQ-handwritten-note.pdf",
+        mimeType: "application/pdf",
+        size: 2_000,
+        url: "/rfq-summit-handwritten-demo.pdf",
+      },
+    ],
+    lineItems: [
+      {
+        id: "li-demo-quick-001",
+        lineNumber: 1,
+        rawText: "300 SHCS M6x20 A2 stainless rev B",
+        parsedSku: "SHCS-M6X20-A2",
+        parsedProductName: "Socket Head Cap Screw M6x20 A2",
+        parsedQuantity: 300,
+        parsedUom: "units",
+        parsedUnitPrice: 0.22,
+        requestedDueDate: "2026-04-06",
+        matchStatus: "confirmed",
+        confidence: 97,
+        matchedCatalogItems: [
+          {
+            catalogSku: "SHCS-M6X20-A2",
+            catalogName: "Socket Head Cap Screw M6x20 — A2",
+            catalogDescription: "A2-70 stainless socket head cap screw, M6x20. ISO 4762.",
+            catalogPrice: 0.22,
+            catalogUom: "unit",
+          },
+        ],
+        issues: [],
+      },
+      {
+        id: "li-demo-quick-002",
+        lineNumber: 2,
+        rawText: "750 M10 flat washer DIN 125 zinc rev C",
+        parsedSku: "WSH-FLT-M10-ZN",
+        parsedProductName: "M10 Flat Washer DIN 125 Zinc",
+        parsedQuantity: 750,
+        parsedUom: "units",
+        parsedUnitPrice: 0.04,
+        requestedDueDate: "2026-04-06",
+        matchStatus: "confirmed",
+        confidence: 98,
+        matchedCatalogItems: [
+          {
+            catalogSku: "WSH-FLT-M10-ZN",
+            catalogName: "M10 Flat Washer DIN 125 — Zinc",
+            catalogDescription: "DIN 125 Form A flat washer, M10, zinc plated.",
+            catalogPrice: 0.04,
+            catalogUom: "unit",
+          },
+        ],
+        issues: [],
+      },
+      {
+        id: "li-demo-quick-003",
+        lineNumber: 3,
+        rawText: "200 Helicoil M8x1.25 tangless inserts",
+        parsedSku: "HEL-M8X125-TL",
+        parsedProductName: "Helicoil M8x1.25 Tangless Insert",
+        parsedQuantity: 200,
+        parsedUom: "units",
+        parsedUnitPrice: 0.85,
+        requestedDueDate: "2026-04-06",
+        matchStatus: "confirmed",
+        confidence: 96,
+        matchedCatalogItems: [
+          {
+            catalogSku: "HEL-M8X125-TL",
+            catalogName: "Helicoil M8x1.25 Tangless Insert",
+            catalogDescription: "Tangless screw thread insert, M8x1.25, 1.5D length, 304 SS.",
+            catalogPrice: 0.85,
+            catalogUom: "unit",
+          },
+        ],
+        issues: [],
+      },
+    ],
+    totalItems: 3,
+    dueDate: "6 Apr 2026",
+    paymentTerms: "Net 30",
+    parseConfidence: 96,
+    parseMissingFields: [],
+    ingestionSourceLabel: "Outlook - Handwritten RFQ",
+    demoFlow: {
+      scenario: "rfq_quick",
+      stage: "rfq_received",
+    },
+  },
+
   // 1. RFQ Received — interactive demo entry point (tier-1 auto seating blanket release)
   {
     id: "ord-demo-005",

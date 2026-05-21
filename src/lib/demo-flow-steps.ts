@@ -52,9 +52,12 @@ function buildPoAttachment(
     : derivePoNumber(order);
   const suffix = variant === "mismatch" ? "-mismatch" : "";
   const fileName = `${poNumber}${suffix}.pdf`;
+  const isQuickDemo = order.demoFlow?.scenario === "rfq_quick";
   const pdfUrl = variant === "mismatch"
     ? "/po-mismatch-q-2026-0047.pdf"
-    : "/po-match-q-2026-0047.pdf";
+    : isQuickDemo
+      ? "/po-summit-demo.pdf"
+      : "/po-match-q-2026-0047.pdf";
   return {
     id: `att-po-${variant}-${order.id.slice(-6)}`,
     fileName,
@@ -163,6 +166,42 @@ const STEP_QUOTE_SENT: DemoStep = {
         : undefined,
     },
   }),
+};
+
+const STEP_CREATE_QUOTE: DemoStep = {
+  id: "create_quote",
+  type: "user",
+  apply: (order) => {
+    const quoteNumber = deriveQuoteNumber(order);
+    const quoteItems = order.lineItems.map((li) => ({
+      sku: li.parsedSku ?? "CUSTOM",
+      name: li.parsedProductName,
+      qty: li.parsedQuantity,
+      unitPrice: li.parsedUnitPrice ?? 0,
+    }));
+    const subtotal = quoteItems.reduce(
+      (s, i) => s + i.qty * i.unitPrice,
+      0
+    );
+
+    return {
+      ...order,
+      stage: "quote_sent",
+      dueDate: order.dueDate || "2026-04-20",
+      demoFlow: {
+        ...order.demoFlow!,
+        stage: "quote_prepared",
+        quoteNumber,
+        quoteSummary: {
+          quoteNumber,
+          items: quoteItems,
+          subtotal,
+          sentAt: "",
+          sentTo: order.customer.email,
+        },
+      },
+    };
+  },
 };
 
 const STEP_PO_MISMATCH: DemoStep = {
@@ -305,42 +344,51 @@ const STEP_PO_MATCH_REVISED: DemoStep = {
   },
 };
 
+const STEP_PO_MATCH_CLEAN_3S: DemoStep = {
+  id: "po_received_match",
+  type: "auto",
+  delayMs: 3000,
+  apply: (order) => buildCleanPoMatch(order),
+};
+
 const STEP_PO_MATCH_CLEAN: DemoStep = {
   id: "po_received_match",
   type: "auto",
   delayMs: 2000,
-  apply: (order) => {
-    const poNumber = derivePoNumber(order);
-    const quoteNumber = order.demoFlow!.quoteNumber ?? deriveQuoteNumber(order);
-    const poAttachment = buildPoAttachment(order, "match");
-    return {
-      ...order,
-      stage: "po_received",
-      poNumber,
-      paymentTerms: order.paymentTerms || "Net 30",
-      attachments: appendAttachment(order.attachments ?? [], poAttachment),
-      demoFlow: {
-        ...order.demoFlow!,
-        stage: "po_validated",
-        poNumber,
-        quoteNumber,
-        poConfirmation: {
-          poNumber,
-          receivedAt: now(),
-          matchesQuote: true,
-        },
-        quoteComparison: {
-          overallMatch: true,
-          checks: [
-            { field: "price" as ComparisonField, matches: true, quoteValue: "All lines matched quoted prices", incomingValue: "All lines matched quoted prices" },
-            { field: "quantity" as ComparisonField, matches: true, quoteValue: "All quantities matched", incomingValue: "All quantities matched" },
-            { field: "dueDate" as ComparisonField, matches: true, quoteValue: "Due dates aligned", incomingValue: "Due dates aligned" },
-          ],
-        },
-      },
-    };
-  },
+  apply: (order) => buildCleanPoMatch(order),
 };
+
+function buildCleanPoMatch(order: Order): Order {
+  const poNumber = derivePoNumber(order);
+  const quoteNumber = order.demoFlow!.quoteNumber ?? deriveQuoteNumber(order);
+  const poAttachment = buildPoAttachment(order, "match");
+  return {
+    ...order,
+    stage: "po_received",
+    poNumber,
+    paymentTerms: order.paymentTerms || "Net 30",
+    attachments: appendAttachment(order.attachments ?? [], poAttachment),
+    demoFlow: {
+      ...order.demoFlow!,
+      stage: "po_validated",
+      poNumber,
+      quoteNumber,
+      poConfirmation: {
+        poNumber,
+        receivedAt: now(),
+        matchesQuote: true,
+      },
+      quoteComparison: {
+        overallMatch: true,
+        checks: [
+          { field: "price" as ComparisonField, matches: true, quoteValue: "All lines matched quoted prices", incomingValue: "All lines matched quoted prices" },
+          { field: "quantity" as ComparisonField, matches: true, quoteValue: "All quantities matched", incomingValue: "All quantities matched" },
+          { field: "dueDate" as ComparisonField, matches: true, quoteValue: "Due dates aligned", incomingValue: "Due dates aligned" },
+        ],
+      },
+    },
+  };
+}
 
 const STEP_PUSHED_TO_MRP: DemoStep = {
   id: "pushed_to_mrp",
@@ -535,6 +583,16 @@ const STEP_QB_CLARIFICATION_REPLY: DemoStep = {
 
 export function getDemoSteps(order: Order): DemoStep[] {
   const isPhone = order.source === "phone";
+
+  if (order.demoFlow?.scenario === "rfq_quick") {
+    return [
+      STEP_CREATE_QUOTE,
+      STEP_QUOTE_SENT,
+      STEP_PO_MATCH_CLEAN_3S,
+      STEP_PUSHED_TO_MRP,
+      ...SHIPPING_STEPS,
+    ];
+  }
 
   if (order.orderType === "quote_builder") {
     const isPoPhase =

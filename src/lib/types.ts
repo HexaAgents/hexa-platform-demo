@@ -66,6 +66,7 @@ export type DemoOrderStage =
 export type DemoOrderScenario =
   | "rfq_csv"
   | "rfq_handwritten"
+  | "rfq_quick"
   | "po_match"
   | "po_mismatch"
   | "dynamic";

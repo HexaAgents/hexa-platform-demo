@@ -563,13 +563,236 @@ async function generatePoTopline() {
   console.log("  ✓ po-topline-supply-q1.pdf");
 }
 
+async function generateRfqSummitDemo() {
+  const doc = await PDFDocument.create();
+  const page = doc.addPage([612, 792]);
+  const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+  const regular = await doc.embedFont(StandardFonts.Helvetica);
+  const courier = await doc.embedFont(StandardFonts.Courier);
+  const { width, height } = page.getSize();
+  const m = 50;
+
+  drawRect(page, 0, height - 65, width, 65, rgb(0.42, 0.22, 0.08));
+  page.drawText("SUMMIT FABRICATION", { x: m, y: height - 30, size: 16, font: bold, color: COLORS.headerText });
+  page.drawText("22 Foundry Lane, Pittsburgh, PA 15201", { x: m, y: height - 47, size: 8, font: regular, color: rgb(0.85, 0.75, 0.65) });
+  page.drawText("RFQ", { x: width - m - bold.widthOfTextAtSize("RFQ", 20), y: height - 35, size: 20, font: bold, color: COLORS.headerText });
+
+  let y = height - 90;
+
+  page.drawText("From: Ravi Patel — mann.patira@gmail.com — (555) 778-4010", { x: m, y, size: 9, font: regular, color: COLORS.dark });
+  y -= 15;
+  page.drawText("Date: March 30, 2026", { x: m, y, size: 9, font: regular, color: COLORS.dark });
+  y -= 15;
+  page.drawText("To: Hexa Manufacturing Sales", { x: m, y, size: 9, font: regular, color: COLORS.dark });
+
+  y -= 25;
+  drawHLine(page, y, m, width - m);
+  y -= 18;
+  page.drawText("HANDWRITTEN SHOP-FLOOR REQUEST — Transcribed", { x: m, y, size: 10, font: bold, color: rgb(0.42, 0.22, 0.08) });
+
+  y -= 20;
+  drawRect(page, m, y - 150, width - 2 * m, 170, rgb(0.98, 0.97, 0.94));
+  page.drawRectangle({ x: m, y: y - 150, width: width - 2 * m, height: 170, borderColor: rgb(0.85, 0.8, 0.7), borderWidth: 1 });
+
+  page.drawText("[ Transcription of handwritten note ]", { x: m + 15, y: y - 5, size: 8, font: regular, color: COLORS.lightGray });
+
+  const handLines = [
+    "Need these for line setup next week — please rush:",
+    "",
+    "  300 x SHCS  M6x20  A2 stainless  (rev B)",
+    "  750 x M10 flat washer  DIN 125  zinc  (rev C)",
+    "  200 x Helicoil  M8x1.25  tangless inserts",
+    "",
+    "Ship to Dock 2.  Urgent — line setup next week.",
+    "Quote what you can and flag anything unclear.",
+    "— Ravi",
+  ];
+
+  let hy = y - 20;
+  for (const line of handLines) {
+    page.drawText(line, { x: m + 20, y: hy, size: 10, font: courier, color: rgb(0.2, 0.15, 0.1) });
+    hy -= 14;
+  }
+
+  y -= 185;
+  page.drawText("PARSED LINE ITEMS:", { x: m, y, size: 9, font: bold, color: COLORS.dark });
+
+  y -= 18;
+  const cols = [m, m + 30, m + 230, m + 320, m + 365, m + 415, m + 475];
+  const colLabels = ["#", "Product", "Part No.", "Qty", "UOM", "Catalog Price", "Need By"];
+
+  drawRect(page, m, y - 6, width - 2 * m, 20, COLORS.tableHeaderBg);
+  for (let i = 0; i < colLabels.length; i++) {
+    page.drawText(colLabels[i], { x: cols[i], y, size: 8, font: bold, color: COLORS.gray });
+  }
+  y -= 20;
+  drawHLine(page, y + 12, m, width - m);
+
+  const items = [
+    ["1", "Socket Head Cap Screw M6x20 A2", "SHCS-M6X20-A2", "300", "units", "$0.22", "Apr 6, 2026"],
+    ["2", "M10 Flat Washer DIN 125 Zinc", "WSH-FLT-M10-ZN", "750", "units", "$0.04", "Apr 6, 2026"],
+    ["3", "Helicoil M8x1.25 Tangless Insert", "HEL-M8X125-TL", "200", "units", "$0.85", "Apr 6, 2026"],
+  ];
+
+  for (const row of items) {
+    for (let i = 0; i < row.length; i++) {
+      page.drawText(row[i], { x: cols[i], y, size: 8.5, font: regular, color: COLORS.dark });
+    }
+    y -= 20;
+    drawHLine(page, y + 12, m, width - m);
+  }
+
+  y -= 8;
+  page.drawText("Subtotal (at catalog):", { x: m + 355, y, size: 8.5, font: bold, color: COLORS.gray });
+  page.drawText("$266.00", { x: m + 475, y, size: 8.5, font: bold, color: COLORS.dark });
+
+  y -= 30;
+  page.drawText("DELIVERY:", { x: m, y, size: 9, font: bold, color: COLORS.dark });
+  y -= 14;
+  page.drawText("Ship to: 22 Foundry Lane, Dock 2, Pittsburgh, PA 15201", { x: m, y, size: 8, font: regular, color: COLORS.dark });
+  y -= 13;
+  page.drawText("Required by: April 6, 2026 — Urgent for line setup", { x: m, y, size: 8, font: regular, color: COLORS.dark });
+
+  y -= 25;
+  drawHLine(page, y, m, width - m);
+  y -= 14;
+  page.drawText("Summit Fabrication — Shop Floor RFQ — Confidential", { x: m, y, size: 7, font: regular, color: COLORS.lightGray });
+
+  const bytes = await doc.save();
+  fs.writeFileSync(path.join(PUBLIC, "rfq-summit-handwritten-demo.pdf"), bytes);
+  console.log("  ✓ rfq-summit-handwritten-demo.pdf");
+}
+
+async function generatePoSummitDemo() {
+  const doc = await PDFDocument.create();
+  const page = doc.addPage([612, 792]);
+  const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+  const regular = await doc.embedFont(StandardFonts.Helvetica);
+  const { width, height } = page.getSize();
+  const m = 50;
+
+  drawRect(page, 0, height - 75, width, 75, rgb(0.42, 0.22, 0.08));
+  page.drawText("SUMMIT FABRICATION", { x: m, y: height - 30, size: 16, font: bold, color: COLORS.headerText });
+  page.drawText("22 Foundry Lane, Pittsburgh, PA 15201", { x: m, y: height - 48, size: 8, font: regular, color: rgb(0.85, 0.75, 0.65) });
+  const poTitle = "PURCHASE ORDER";
+  page.drawText(poTitle, { x: width - m - bold.widthOfTextAtSize(poTitle, 16), y: height - 32, size: 16, font: bold, color: COLORS.headerText });
+  const poNum = "PO-2026-0099";
+  page.drawText(poNum, { x: width - m - regular.widthOfTextAtSize(poNum, 10), y: height - 50, size: 10, font: regular, color: rgb(0.85, 0.75, 0.65) });
+
+  let y = height - 105;
+
+  drawRect(page, m, y - 75, 230, 85, rgb(0.96, 0.97, 0.98));
+  page.drawText("VENDOR:", { x: m + 8, y, size: 8, font: bold, color: COLORS.accent });
+  y -= 13;
+  page.drawText("Hexa Manufacturing", { x: m + 8, y, size: 9, font: regular, color: COLORS.dark });
+  y -= 12;
+  page.drawText("Sales Department", { x: m + 8, y, size: 9, font: regular, color: COLORS.dark });
+  y -= 12;
+  page.drawText("sales@hexamfg.com", { x: m + 8, y, size: 9, font: regular, color: COLORS.dark });
+
+  y = height - 105;
+  drawRect(page, m + 260, y - 75, 230, 85, rgb(0.96, 0.97, 0.98));
+  page.drawText("SHIP TO:", { x: m + 268, y, size: 8, font: bold, color: COLORS.accent });
+  y -= 13;
+  page.drawText("Summit Fabrication", { x: m + 268, y, size: 9, font: regular, color: COLORS.dark });
+  y -= 12;
+  page.drawText("22 Foundry Lane, Dock 2", { x: m + 268, y, size: 9, font: regular, color: COLORS.dark });
+  y -= 12;
+  page.drawText("Pittsburgh, PA 15201", { x: m + 268, y, size: 9, font: regular, color: COLORS.dark });
+
+  y = height - 105 - 75 - 15;
+
+  const poMeta = [
+    ["PO Number:", "PO-2026-0099"],
+    ["PO Date:", "March 31, 2026"],
+    ["Quote Ref:", "Q-2026-0099"],
+    ["Payment Terms:", "Net 30"],
+    ["Shipping:", "FedEx Economy"],
+    ["Required Delivery:", "April 6, 2026"],
+    ["Buyer:", "Ravi Patel — mann.patira@gmail.com"],
+  ];
+  for (const [label, value] of poMeta) {
+    page.drawText(label, { x: m, y, size: 8.5, font: bold, color: COLORS.gray });
+    page.drawText(value, { x: m + 110, y, size: 8.5, font: regular, color: COLORS.dark });
+    y -= 14;
+  }
+
+  y -= 15;
+  const cols = [m, m + 28, m + 215, m + 320, m + 360, m + 410, m + 470];
+  const colLabels = ["#", "Item Description", "Part No.", "Qty", "UOM", "Unit Price", "Line Total"];
+
+  drawRect(page, m, y - 6, width - 2 * m, 20, rgb(0.9, 0.92, 0.95));
+  for (let i = 0; i < colLabels.length; i++) {
+    page.drawText(colLabels[i], { x: cols[i], y, size: 8, font: bold, color: COLORS.gray });
+  }
+  y -= 20;
+  drawHLine(page, y + 12, m, width - m);
+
+  const items = [
+    ["1", "Socket Head Cap Screw M6x20 A2", "SHCS-M6X20-A2", "300", "units", "$0.22", "$66.00"],
+    ["2", "M10 Flat Washer DIN 125 Zinc", "WSH-FLT-M10-ZN", "750", "units", "$0.04", "$30.00"],
+    ["3", "Helicoil M8x1.25 Tangless Insert", "HEL-M8X125-TL", "200", "units", "$0.85", "$170.00"],
+  ];
+
+  for (let r = 0; r < items.length; r++) {
+    if (r % 2 === 1) drawRect(page, m, y - 8, width - 2 * m, 20, rgb(0.97, 0.98, 0.99));
+    for (let i = 0; i < items[r].length; i++) {
+      page.drawText(items[r][i], { x: cols[i], y, size: 8.5, font: regular, color: COLORS.dark });
+    }
+    y -= 20;
+    drawHLine(page, y + 12, m, width - m);
+  }
+
+  y -= 5;
+  drawRect(page, m + 360, y - 4, width - m - (m + 360), 18, rgb(0.96, 0.97, 0.98));
+  page.drawText("Subtotal:", { x: m + 370, y, size: 8.5, font: bold, color: COLORS.gray });
+  page.drawText("$266.00", { x: m + 470, y, size: 8.5, font: bold, color: COLORS.dark });
+  y -= 16;
+  page.drawText("Shipping:", { x: m + 370, y, size: 8.5, font: regular, color: COLORS.gray });
+  page.drawText("TBD", { x: m + 470, y, size: 8.5, font: regular, color: COLORS.dark });
+  y -= 16;
+  drawRect(page, m + 360, y - 4, width - m - (m + 360), 18, rgb(0.9, 0.92, 0.95));
+  page.drawText("TOTAL:", { x: m + 370, y, size: 9, font: bold, color: COLORS.dark });
+  page.drawText("$266.00", { x: m + 470, y, size: 9, font: bold, color: COLORS.dark });
+
+  y -= 30;
+  page.drawText("TERMS & CONDITIONS:", { x: m, y, size: 9, font: bold, color: COLORS.dark });
+  y -= 14;
+  const terms = [
+    "1.  This Purchase Order is subject to Summit Fabrication standard terms and conditions.",
+    "2.  All prices are per quote Q-2026-0099.",
+    "3.  Packing slip must reference PO number PO-2026-0099.",
+    "4.  Notify buyer of any delivery delays within 24 hours.",
+    "5.  Defective items subject to return at vendor's expense.",
+  ];
+  for (const t of terms) {
+    page.drawText(t, { x: m, y, size: 7.5, font: regular, color: COLORS.dark });
+    y -= 12;
+  }
+
+  y -= 15;
+  drawHLine(page, y, m, width - m);
+  y -= 14;
+  page.drawText("Authorized By: Ravi Patel, Production Lead", { x: m, y, size: 8, font: regular, color: COLORS.gray });
+  y -= 12;
+  page.drawText("Summit Fabrication — This document constitutes a binding purchase order.", { x: m, y, size: 7, font: regular, color: COLORS.lightGray });
+  y -= 12;
+  page.drawText("Page 1 of 1", { x: width / 2 - 20, y, size: 7, font: regular, color: COLORS.lightGray });
+
+  const bytes = await doc.save();
+  fs.writeFileSync(path.join(PUBLIC, "po-summit-demo.pdf"), bytes);
+  console.log("  ✓ po-summit-demo.pdf");
+}
+
 async function main() {
   console.log("Generating PDF documents...\n");
   await generateRfqPacific();
   await generateRfqAcme();
   await generateRfqNorthfield();
   await generateRfqSummit();
+  await generateRfqSummitDemo();
   await generatePoTopline();
+  await generatePoSummitDemo();
   console.log("\nDone! All PDFs saved to public/");
 }
 
