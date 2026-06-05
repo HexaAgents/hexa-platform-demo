@@ -581,8 +581,159 @@ const STEP_QB_CLARIFICATION_REPLY: DemoStep = {
   },
 };
 
+// ── Advisory scenario (customer unsure which SKU — Hexa recommends) ──────────
+
+const STEP_ADV_CLARIFICATION_REPLY: DemoStep = {
+  id: "clarification_reply",
+  type: "auto",
+  delayMs: 5000,
+  apply: (order) => {
+    const customerName = order.customer.name.split(" ")[0];
+    const parsedAnswers = [
+      "Brackets: stainless steel",
+      "Framework: structural steel",
+      "Connection: through-bolted",
+      "Fastener diameter: approx. 1/2\"",
+      "Grip length needed: ~2.5–3\"",
+      "Environment: washdown / food processing facility",
+      "Corrosion resistance: preferred",
+      "Loading: moderate structural",
+    ];
+    const clarifications = [...(order.demoFlow?.clarifications ?? [])];
+    if (clarifications.length > 0) {
+      clarifications[0] = {
+        ...clarifications[0],
+        replyReceived: {
+          body:
+            `Hi,\n\nThanks for the quick questions. I pulled one of the bolts off the existing line and measured it — answers below.\n\n` +
+            `- The brackets are stainless steel, bolting onto structural steel framework.\n` +
+            `- It's a through-bolted connection, not tapped.\n` +
+            `- Holes take roughly a 1/2" fastener.\n` +
+            `- Grip works out to about 2.5–3" with the bracket flange and framing.\n` +
+            `- The whole area is a washdown zone, so corrosion resistance matters to us.\n` +
+            `- Loading is moderate / structural, nothing extreme.\n\n` +
+            `I've attached a photo of the existing bolt measured against a tape — it reads right around 3". ` +
+            `This is the one we currently run; whatever you'd recommend to match it works for us.\n\nThanks,\n${customerName}`,
+          receivedAt: now(),
+          parsedAnswers,
+          photoUrl: "/products/customer-reference-fastener.png",
+          photoCaption:
+            "Customer photo — existing fastener pulled off the line, measured against a tape (≈3\")",
+        },
+      };
+    }
+
+    const replyEmailAttachment: Attachment = {
+      id: `att-reply-${order.id.slice(-6)}`,
+      fileName: "RE-conveyor-guide-rail.eml.html",
+      mimeType: "text/html",
+      size: 5_400,
+      url: "/email-coldchain-reply.html",
+    };
+    const existing = order.attachments ?? [];
+    const attachments = existing.some((a) => a.id === replyEmailAttachment.id)
+      ? existing
+      : [replyEmailAttachment, ...existing];
+
+    return {
+      ...order,
+      stage: "clarification_received",
+      attachments,
+      demoFlow: {
+        ...order.demoFlow!,
+        clarifications,
+      },
+    };
+  },
+};
+
+const STEP_ADV_SELECT_SKU: DemoStep = {
+  id: "adv_select_sku",
+  type: "user",
+  apply: (order) => {
+    const advisory = order.demoFlow?.skuAdvisory;
+    if (!advisory) return order;
+    const chosen =
+      advisory.candidates.find((c) => c.id === advisory.selectedCandidateId) ??
+      advisory.candidates.find((c) => c.recommended) ??
+      advisory.candidates[0];
+    if (!chosen) return order;
+
+    const baseItem = order.lineItems[0];
+    const qty = baseItem?.parsedQuantity ?? 400;
+    const quoteNumber = deriveQuoteNumber(order);
+
+    const resolvedLineItem = {
+      ...baseItem,
+      parsedSku: chosen.sku,
+      parsedProductName: chosen.name,
+      parsedQuantity: qty,
+      parsedUnitPrice: chosen.unitPrice,
+      parsedUom: baseItem?.parsedUom ?? "units",
+      matchStatus: "confirmed" as const,
+      confidence: 96,
+      matchedCatalogItems: [
+        {
+          catalogSku: chosen.sku,
+          catalogName: chosen.name,
+          catalogDescription:
+            chosen.specs?.map((s) => `${s.label}: ${s.value}`).join(", ") ??
+            chosen.name,
+          catalogPrice: chosen.unitPrice,
+          catalogUom: chosen.uom ?? "unit",
+        },
+      ],
+      issues: [],
+    };
+
+    const items = [
+      { sku: chosen.sku, name: chosen.name, qty, unitPrice: chosen.unitPrice },
+    ];
+    const subtotal = qty * chosen.unitPrice;
+
+    return {
+      ...order,
+      stage: "quote_sent",
+      dueDate: order.dueDate || "2026-06-26",
+      lineItems: [resolvedLineItem],
+      parseMissingFields: [],
+      demoFlow: {
+        ...order.demoFlow!,
+        stage: "quote_prepared",
+        quoteNumber,
+        skuAdvisory: {
+          ...advisory,
+          selectedCandidateId: chosen.id,
+          selectedAt: advisory.selectedAt || now(),
+        },
+        quoteSummary: {
+          quoteNumber,
+          items,
+          subtotal,
+          sentAt: "",
+          sentTo: order.customer.email,
+        },
+      },
+    };
+  },
+};
+
 export function getDemoSteps(order: Order): DemoStep[] {
   const isPhone = order.source === "phone";
+
+  if (order.demoFlow?.scenario === "rfq_advisory") {
+    return [
+      STEP_CLARIFICATION_SENT,
+      STEP_ADV_CLARIFICATION_REPLY,
+      STEP_ADV_SELECT_SKU,
+      STEP_QUOTE_SENT,
+      STEP_PO_MISMATCH,
+      STEP_CORRECTION_SENT,
+      STEP_PO_MATCH_REVISED,
+      STEP_PUSHED_TO_MRP,
+      ...SHIPPING_STEPS,
+    ];
+  }
 
   if (order.demoFlow?.scenario === "rfq_quick") {
     return [

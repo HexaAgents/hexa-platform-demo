@@ -1,11 +1,42 @@
 "use client";
 
+import { useState } from "react";
 import { Order } from "@/lib/types";
-import { Mail, ArrowRight } from "lucide-react";
+import { Mail, ArrowRight, Paperclip, ImageOff } from "lucide-react";
 
 interface Props {
   order: Order;
   mode: "active" | "completed";
+}
+
+function ReplyPhoto({ url, caption }: { url: string; caption?: string }) {
+  const [errored, setErrored] = useState(false);
+  return (
+    <div className="mt-3 max-w-sm border border-emerald-500/20 bg-background">
+      <div className="flex items-center gap-1.5 border-b border-emerald-500/20 px-2.5 py-1.5 text-[11px] font-medium text-emerald-800">
+        <Paperclip className="h-3 w-3" />
+        Photo attachment
+      </div>
+      {errored ? (
+        <div className="flex h-40 flex-col items-center justify-center gap-1.5 bg-muted/30 text-muted-foreground">
+          <ImageOff className="h-5 w-5" />
+          <span className="text-[11px]">{url.split("/").pop()}</span>
+        </div>
+      ) : (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img
+          src={url}
+          alt={caption ?? "Customer photo"}
+          className="h-auto w-full object-contain"
+          style={{ maxHeight: 280 }}
+          onError={() => setErrored(true)}
+        />
+      )}
+      {caption && (
+        <p className="px-2.5 py-1.5 text-[11px] text-muted-foreground">{caption}</p>
+      )}
+    </div>
+  );
 }
 
 export function ClarificationSection({ order, mode }: Props) {
@@ -66,6 +97,12 @@ export function ClarificationSection({ order, mode }: Props) {
                     </p>
                   ))}
                 </div>
+                {round.replyReceived.photoUrl && (
+                  <ReplyPhoto
+                    url={round.replyReceived.photoUrl}
+                    caption={round.replyReceived.photoCaption}
+                  />
+                )}
               </div>
             </>
           )}

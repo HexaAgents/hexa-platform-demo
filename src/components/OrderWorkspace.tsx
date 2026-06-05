@@ -8,6 +8,7 @@ import { BomReviewSection } from "./orders/BomReviewSection";
 import { InventoryCheckSection } from "./orders/InventoryCheckSection";
 import { QuoteDraftSection } from "./orders/QuoteDraftSection";
 import { QuoteSentSection } from "./orders/QuoteSentSection";
+import { SkuRecommendationSection } from "./orders/SkuRecommendationSection";
 import { PoReceivedSection } from "./orders/PoReceivedSection";
 import { MrpPushSection } from "./orders/MrpPushSection";
 import { OrderDeliveryBanner } from "./orders/OrderDeliveryBanner";
@@ -20,6 +21,7 @@ type SectionKey =
   | "po"
   | "quote"
   | "quote_draft"
+  | "sku_advisory"
   | "inventory_check"
   | "bom_review"
   | "clarification"
@@ -28,6 +30,7 @@ type SectionKey =
 export interface DemoContext {
   stepId: string;
   advance: () => void;
+  advanceWith: (mutate: (order: Order) => Order) => void;
   isAutoProgressing: boolean;
 }
 
@@ -127,6 +130,15 @@ const SECTION_DEFS: SectionDef[] = [
     isActive: (o) => o.stage === "quote_draft",
   },
   {
+    key: "sku_advisory",
+    shouldRender: (o) =>
+      !!o.demoFlow?.skuAdvisory &&
+      o.stage !== "rfq_received" &&
+      o.stage !== "clarification_requested",
+    isActive: (o) =>
+      !!o.demoFlow?.skuAdvisory && !o.demoFlow.skuAdvisory.selectedCandidateId,
+  },
+  {
     key: "inventory_check",
     shouldRender: (o) =>
       isQuoteBuilder(o) && (
@@ -154,10 +166,17 @@ const SECTION_DEFS: SectionDef[] = [
       o.stage === "needs_clarification" ||
       o.stage === "clarification_requested" ||
       o.stage === "clarification_received",
-    isActive: (o) =>
-      o.stage === "needs_clarification" ||
-      o.stage === "clarification_requested" ||
-      o.stage === "clarification_received",
+    isActive: (o) => {
+      const inClarificationStage =
+        o.stage === "needs_clarification" ||
+        o.stage === "clarification_requested" ||
+        o.stage === "clarification_received";
+      if (!inClarificationStage) return false;
+      const replyReceived = (o.demoFlow?.clarifications ?? []).some(
+        (c) => !!c.replyReceived
+      );
+      return !replyReceived;
+    },
   },
   {
     key: "rfq",
@@ -170,7 +189,10 @@ function getSectionTitle(key: SectionKey, order: Order): string {
   switch (key) {
     case "delivery": return "Delivery Confirmed";
     case "shipping": return "Shipment Tracking";
-    case "mrp": return "Pushed to MRP";
+    case "mrp": {
+      const erpScenarios = new Set(["rfq_advisory", "rfq_quick"]);
+      return erpScenarios.has(order.demoFlow?.scenario ?? "") ? "Pushed to ERP" : "Pushed to MRP";
+    }
     case "po": {
       const hasMismatch = order.demoFlow?.quoteComparison && !order.demoFlow.quoteComparison.overallMatch;
       return hasMismatch ? "PO Mismatch" : "PO Confirmed";
@@ -180,6 +202,7 @@ function getSectionTitle(key: SectionKey, order: Order): string {
       return qs && !qs.sentAt ? "Quote Draft" : "Quote Sent";
     }
     case "quote_draft": return "Quote Builder";
+    case "sku_advisory": return "Product Recommendation";
     case "inventory_check": return "Inventory & Procurement";
     case "bom_review": return "BOM & Drawings";
     case "clarification": return "Clarification";
@@ -200,6 +223,8 @@ function getSectionDate(key: SectionKey, order: Order): string | undefined {
       return order.demoFlow?.poConfirmation?.receivedAt;
     case "quote":
       return order.demoFlow?.quoteSummary?.sentAt;
+    case "sku_advisory":
+      return order.demoFlow?.skuAdvisory?.selectedAt;
     case "quote_draft":
     case "inventory_check":
     case "bom_review":
@@ -267,6 +292,13 @@ function getSectionSummary(key: SectionKey, order: Order): string {
       const inStock = inv.filter((i) => i.status === "in_stock").length;
       const total = inv.length;
       return `Quote built from ${order.lineItems.length} items — ${inStock} of ${total} components in stock`;
+    }
+    case "sku_advisory": {
+      const sa = flow?.skuAdvisory;
+      if (!sa) return "Product recommendation";
+      const chosen = sa.candidates.find((c) => c.id === sa.selectedCandidateId);
+      if (chosen) return `${chosen.sku} selected — ${chosen.name}`;
+      return `${sa.candidates.length} candidate SKUs — 1 recommended`;
     }
     case "inventory_check": {
       const inv = order.inventoryStatus ?? [];
@@ -357,6 +389,8 @@ function renderSection(key: SectionKey, order: Order, mode: "active" | "complete
       return <PoReceivedSection order={order} mode={mode} demoCtx={demoCtx} />;
     case "quote":
       return <QuoteSentSection order={order} mode={mode} demoCtx={demoCtx} />;
+    case "sku_advisory":
+      return <SkuRecommendationSection order={order} mode={mode} demoCtx={demoCtx} />;
     case "quote_draft":
       return <QuoteDraftSection order={order} mode={mode} onStageChange={onStageChange} />;
     case "inventory_check":

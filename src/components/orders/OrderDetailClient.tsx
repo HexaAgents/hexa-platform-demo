@@ -39,6 +39,7 @@ const DEMO_BADGE_MAP: Record<string, { label: string; dot: string }> = {
   create_quote:                  { label: "RFQ Received",          dot: "bg-blue-500" },
   clarification_sent:            { label: "RFQ Received",          dot: "bg-blue-500" },
   clarification_reply:           { label: "Awaiting Clarification", dot: "bg-amber-500" },
+  adv_select_sku:                { label: "Sourcing SKUs",         dot: "bg-blue-500" },
   quote_sent:                    { label: "Quote Draft",           dot: "bg-violet-500" },
   po_received_mismatch:          { label: "Quote Sent",            dot: "bg-violet-500" },
   correction_sent:               { label: "PO Mismatch",          dot: "bg-red-500" },
@@ -93,7 +94,7 @@ export function OrderDetailClient({ order: initialOrder, showLeftPanel = false }
   ).length;
 
   const demoCtx: DemoContext | undefined = demo.isDemoActive
-    ? { stepId: demo.currentStepId, advance: demo.advance, isAutoProgressing: demo.isAutoProgressing }
+    ? { stepId: demo.currentStepId, advance: demo.advance, advanceWith: demo.advanceWith, isAutoProgressing: demo.isAutoProgressing }
     : undefined;
 
   return (

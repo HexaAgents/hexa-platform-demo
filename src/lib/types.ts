@@ -67,6 +67,7 @@ export type DemoOrderScenario =
   | "rfq_csv"
   | "rfq_handwritten"
   | "rfq_quick"
+  | "rfq_advisory"
   | "po_match"
   | "po_mismatch"
   | "dynamic";
@@ -266,8 +267,32 @@ export interface Order {
     clarifications?: Array<{
       questions: string[];
       emailSent: { to: string; subject: string; body: string; sentAt: string };
-      replyReceived?: { body: string; receivedAt: string; parsedAnswers: string[] };
+      replyReceived?: {
+        body: string;
+        receivedAt: string;
+        parsedAnswers: string[];
+        photoUrl?: string;
+        photoCaption?: string;
+      };
     }>;
+    skuAdvisory?: {
+      searchQuery?: string;
+      candidates: Array<{
+        id: string;
+        sku: string;
+        name: string;
+        unitPrice: number;
+        uom?: string;
+        recommended: boolean;
+        fitPoints: string[];
+        recommendationNote: string;
+        imageUrl?: string;
+        availability?: string;
+        specs?: Array<{ label: string; value: string }>;
+      }>;
+      selectedCandidateId?: string;
+      selectedAt?: string;
+    };
     quoteSummary?: {
       quoteNumber: string;
       items: Array<{ sku: string; name: string; qty: number; unitPrice: number }>;

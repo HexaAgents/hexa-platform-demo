@@ -12,16 +12,19 @@ interface DemoState {
 }
 
 type DemoAction =
-  | { type: "advance" }
+  | { type: "advance"; mutate?: (order: Order) => Order }
   | { type: "set_auto_progressing"; value: boolean }
   | { type: "reset"; order: Order; steps: DemoStep[]; startIndex: number };
 
 function reducer(state: DemoState, action: DemoAction): DemoState {
   switch (action.type) {
     case "advance": {
+      const baseOrder = action.mutate ? action.mutate(state.order) : state.order;
       const nextStep = state.steps[state.stepIndex];
-      if (!nextStep) return state;
-      const newOrder = nextStep.apply(state.order);
+      if (!nextStep) {
+        return baseOrder === state.order ? state : { ...state, order: baseOrder };
+      }
+      const newOrder = nextStep.apply(baseOrder);
       return {
         ...state,
         order: newOrder,
@@ -64,6 +67,11 @@ export function useOrderDemoFlow(initialOrder: Order) {
     dispatch({ type: "advance" });
   }, [eligible]);
 
+  const advanceWith = useCallback((mutate: (order: Order) => Order) => {
+    if (!eligible) return;
+    dispatch({ type: "advance", mutate });
+  }, [eligible]);
+
   useEffect(() => {
     const stageChanged = initialOrder.stage !== orderStageRef.current;
     if (eligible && stageChanged) {
@@ -101,6 +109,7 @@ export function useOrderDemoFlow(initialOrder: Order) {
     isAutoProgressing: state.isAutoProgressing,
     isComplete,
     advance,
+    advanceWith,
     isDemoActive: eligible,
   };
 }

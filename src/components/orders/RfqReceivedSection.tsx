@@ -15,6 +15,9 @@ interface Props {
 }
 
 function toCustomerQuestion(rawIssue: string): string {
+  if (rawIssue.trim().endsWith("?")) {
+    return rawIssue.trim();
+  }
   if (rawIssue.includes("No SKU provided — diameter not specified")) {
     return "Could you please confirm the required diameter for this item so we can match it to the correct product in our range?";
   }
