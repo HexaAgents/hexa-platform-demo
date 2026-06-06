@@ -33,6 +33,7 @@ import DraftRFQSection from "./DraftRFQSection";
 import RFQTrackerSection from "./RFQTrackerSection";
 import QuoteComparisonSection from "./QuoteComparisonSection";
 import POPreviewSection from "./POPreviewSection";
+import PODocument, { buildPOCaseNote, buildPOSubject } from "./PODocument";
 import ProcurementShipmentPanel from "./ProcurementShipmentPanel";
 import StageSection from "./StageSection";
 import DeliveryConfirmationBanner from "./DeliveryConfirmationBanner";
@@ -882,7 +883,6 @@ const PO_FORMAT_TABS: { key: POSendFormat; label: string; icon: typeof Mail }[] 
 ];
 
 const PO_SHIP_TO_ADDRESS = "1500 Factory Lane, Dock 4, Milwaukee, WI 53201";
-const PO_PDF_PREVIEW_URL = "/po-match-q-2026-0047.pdf#toolbar=0&navpanes=0&scrollbar=0&view=FitH";
 
 function DraftPOInline({
   item,
@@ -991,24 +991,27 @@ function DraftPOInline({
                   Attached to the email message below
                 </p>
               </div>
-              <a
-                href={PO_PDF_PREVIEW_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Open PDF
-              </a>
+              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                PDF Preview
+              </span>
             </div>
           </div>
-          <div className="border-b border-border bg-background/40 px-5 py-4">
-            <div className="mx-auto max-w-[420px] overflow-hidden border border-border bg-white shadow-sm">
-              <iframe
-                src={PO_PDF_PREVIEW_URL}
-                title={`Purchase order PDF for ${item.sku}`}
-                className="h-[280px] w-full border-0"
-              />
-            </div>
+          <div className="border-b border-border bg-muted/30 px-5 py-5">
+            <PODocument
+              className="mx-auto max-w-[440px]"
+              poNumber={`PO-${item.sku.toUpperCase()}`}
+              status="draft"
+              supplierName={supplier.name}
+              supplierEmail={supplier.contactEmail}
+              supplierPhone={supplier.contactPhone}
+              shipTo={PO_SHIP_TO_ADDRESS}
+              lineItems={[{ name: item.name, sku: item.sku, quantity, unitPrice }]}
+              paymentTerms={paymentTerms}
+              expectedDelivery={deliveryDate}
+              issuedDate={new Date().toISOString().split("T")[0]}
+              subject={buildPOSubject(item)}
+              caseNote={buildPOCaseNote(item)}
+            />
           </div>
           <div className="border-b border-border bg-muted/20 px-5 py-3">
             <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Email Message</p>

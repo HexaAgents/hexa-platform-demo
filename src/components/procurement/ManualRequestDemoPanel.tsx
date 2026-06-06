@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import type { ProcurementItem, ProcurementDemoShipment, ProcurementStatus } from "@/lib/procurement-types";
 import ProcurementShipmentPanel from "./ProcurementShipmentPanel";
+import PODocument from "./PODocument";
 
 interface Props {
   item: ProcurementItem;
@@ -978,66 +979,28 @@ function SupplierSelectionContent({
 
 function POSentContent({ supplier, quote }: { supplier: SupplierInfo; quote: QuoteInfo }) {
   return (
-    <div className="border border-border bg-card">
-      <div className="flex items-center gap-3 border-b border-border px-5 py-4">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-none border border-emerald-500/40 bg-emerald-500/10">
-          <Send className="h-4 w-4 text-emerald-600" />
-        </div>
-        <div>
-          <h3 className="text-[14px] font-semibold text-foreground">Purchase Order Sent</h3>
-          <p className="text-[12px] text-muted-foreground">PO dispatched to {supplier.name}</p>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-px border-b border-border bg-border">
-        <div className="bg-card px-5 py-3.5">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Supplier</p>
-          <p className="mt-1 text-[13px] font-medium text-foreground/85">{supplier.name}</p>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">{supplier.email}</p>
-        </div>
-        <div className="bg-card px-5 py-3.5">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Ship To</p>
-          <p className="mt-1 text-[13px] text-foreground/85">1500 Factory Lane, Dock 4, Milwaukee, WI 53201</p>
-        </div>
-      </div>
-      <div className="border-b border-border px-5 py-3.5">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground mb-2.5">Line Items</p>
-        <div className="border border-border">
-          <div className="flex items-center bg-muted/30 px-4 py-2">
-            <span className="flex-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Item</span>
-            <span className="w-20 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Qty</span>
-            <span className="w-24 text-right text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Unit Price</span>
-            <span className="w-24 text-right text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Subtotal</span>
-          </div>
-          {PARSED_PARTS.map((part, i) => {
-            const price = quote.unitPrices[i];
-            return (
-              <div key={part.line} className="flex items-center border-t border-border px-4 py-2.5">
-                <div className="flex-1">
-                  <p className="text-[12px] font-medium text-foreground/85">{part.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{part.sku}</p>
-                </div>
-                <span className="w-20 text-center text-[12px] font-medium tabular-nums text-foreground/70">{part.qty}</span>
-                <span className="w-24 text-right text-[12px] font-medium tabular-nums text-foreground/70">${price.toFixed(2)}</span>
-                <span className="w-24 text-right text-[12px] font-semibold tabular-nums text-foreground">${(price * part.qty).toFixed(2)}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      <div className="grid grid-cols-3 gap-px bg-border">
-        <div className="bg-card px-5 py-3.5">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Payment Terms</p>
-          <p className="mt-1 text-[13px] font-medium text-foreground/85">{quote.terms}</p>
-        </div>
-        <div className="bg-card px-5 py-3.5">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Expected Delivery</p>
-          <p className="mt-1 text-[13px] font-medium text-foreground/85">{deliveryDateForSupplier(quote.leadDays)}</p>
-        </div>
-        <div className="bg-card px-5 py-3.5">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Total Value</p>
-          <p className="mt-1 text-[13px] font-semibold text-foreground">${quote.total.toLocaleString()}</p>
-        </div>
-      </div>
+    <div className="border border-border bg-muted/30 px-5 py-5">
+      <PODocument
+        className="mx-auto max-w-[440px]"
+        poNumber="PO-2026-0148"
+        status="sent"
+        supplierName={supplier.name}
+        supplierEmail={supplier.email}
+        shipTo="1500 Factory Lane, Dock 4, Milwaukee, WI 53201"
+        lineItems={PARSED_PARTS.map((part, i) => ({
+          name: part.name,
+          sku: part.sku,
+          quantity: part.qty,
+          uom: part.uom,
+          unitPrice: quote.unitPrices[i],
+        }))}
+        paymentTerms={quote.terms}
+        expectedDelivery={deliveryDateForSupplier(quote.leadDays)}
+        issuedDate="2026-03-14"
+        subject="Procurement Request — Pneumatic Assembly Components"
+        caseNote="Raised from a parts restock request emailed by Sarah Chen and parsed by the Hexa platform."
+        footerNote={`Sent to ${supplier.name}. Awaiting supplier confirmation and shipment.`}
+      />
     </div>
   );
 }
