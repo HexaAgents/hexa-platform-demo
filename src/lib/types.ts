@@ -305,6 +305,15 @@ export interface Order {
       receivedAt: string;
       matchesQuote: boolean;
     };
+    /** Snapshot of the line items as they arrived on the customer's PO. Persisted
+     * so the original (mismatched) PO can still be rendered after correction. */
+    receivedPoLines?: Array<{
+      sku: string;
+      name: string;
+      qty: number;
+      unitPrice: number;
+      mismatch?: boolean;
+    }>;
     mrpPush?: {
       pushedAt: string;
       erpOrderId?: string;

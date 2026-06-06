@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { OrderWorkspace } from "@/components/OrderWorkspace";
 import type { DemoContext } from "@/components/OrderWorkspace";
-import { AttachmentViewer } from "@/components/AttachmentViewer";
+import { OrderSourcePanel } from "./OrderSourcePanel";
 import { OrderProcessBar } from "./OrderProcessBar";
 import { useOrderDemoFlow } from "@/hooks/useOrderDemoFlow";
 import type { Order, OrderStage } from "@/lib/types";
@@ -166,7 +166,7 @@ export function OrderDetailClient({ order: initialOrder, showLeftPanel = false }
         <div className="grid grid-cols-1 gap-8 xl:grid-cols-5">
           <div className="xl:col-span-2">
             <div className="border border-border bg-card p-6 shadow-sm">
-              <AttachmentViewer attachments={order.attachments ?? []} />
+              <OrderSourcePanel order={order} />
             </div>
           </div>
           <div className="xl:col-span-3">

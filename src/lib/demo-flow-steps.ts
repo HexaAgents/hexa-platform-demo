@@ -275,6 +275,29 @@ const STEP_PO_MISMATCH: DemoStep = {
     const customerName = order.customer.name.split(" ")[0];
     const poAttachment = buildPoAttachment(order, "mismatch");
 
+    // Snapshot the incoming PO lines (mirrors the deltas used to build `checks`
+    // above) so the original PO can still be rendered after it's corrected.
+    const receivedPoLines = items.map((it, idx) => {
+      const base = {
+        sku: it.parsedSku ?? "CUSTOM",
+        name: it.parsedProductName,
+        qty: it.parsedQuantity,
+        unitPrice: it.parsedUnitPrice ?? 0,
+        mismatch: false,
+      };
+      if (idx === 0) {
+        return { ...base, qty: it.parsedQuantity + 50, mismatch: true };
+      }
+      if (idx === 1) {
+        return {
+          ...base,
+          unitPrice: +(((it.parsedUnitPrice ?? 10) * 0.89).toFixed(2)),
+          mismatch: true,
+        };
+      }
+      return base;
+    });
+
     return {
       ...order,
       stage: "po_mismatch",
@@ -287,6 +310,7 @@ const STEP_PO_MISMATCH: DemoStep = {
         stage: "po_received",
         poNumber,
         quoteNumber,
+        receivedPoLines,
         poConfirmation: {
           poNumber,
           receivedAt: now(),
@@ -589,7 +613,7 @@ const STEP_QB_CLARIFICATION_REPLY: DemoStep = {
 const STEP_ADV_CLARIFICATION_REPLY: DemoStep = {
   id: "clarification_reply",
   type: "auto",
-  delayMs: 5000,
+  delayMs: 3000,
   apply: (order) => {
     const customerName = order.customer.name.split(" ")[0];
     const parsedAnswers = [
