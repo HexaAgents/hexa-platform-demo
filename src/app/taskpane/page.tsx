@@ -35,24 +35,32 @@ interface OfficeAttachmentDetails {
   isInline: boolean;
 }
 
+interface OfficeMailboxItem {
+  from: { displayName: string; emailAddress: string };
+  subject: string;
+  attachments: OfficeAttachmentDetails[];
+  getAttachmentContentAsync?: (
+    id: string,
+    callback: (result: {
+      status: string;
+      value: { content: string; format: string };
+    }) => void
+  ) => void;
+}
+
 declare global {
   interface Window {
     Office?: {
       onReady: (callback: (info: { host: string }) => void) => void;
+      EventType: { ItemChanged: string };
       context: {
         mailbox: {
-          item: {
-            from: { displayName: string; emailAddress: string };
-            subject: string;
-            attachments: OfficeAttachmentDetails[];
-            getAttachmentContentAsync?: (
-              id: string,
-              callback: (result: {
-                status: string;
-                value: { content: string; format: string };
-              }) => void
-            ) => void;
-          };
+          item: OfficeMailboxItem | null;
+          addHandlerAsync: (
+            eventType: string,
+            handler: () => void,
+            callback?: (result: { status: string }) => void
+          ) => void;
         };
       };
     };
@@ -99,7 +107,7 @@ function KindIcon({ kind }: { kind: AttachmentKind }) {
 }
 
 function readAttachmentContent(
-  item: NonNullable<Window["Office"]>["context"]["mailbox"]["item"],
+  item: OfficeMailboxItem,
   attachmentId: string
 ): Promise<string | null> {
   return new Promise((resolve) => {
@@ -130,7 +138,7 @@ function readAttachmentContent(
 }
 
 function getAttachmentList(
-  item: NonNullable<Window["Office"]>["context"]["mailbox"]["item"]
+  item: OfficeMailboxItem
 ): OfficeAttachmentDetails[] {
   try {
     const list = item.attachments;
@@ -393,32 +401,64 @@ function TaskpaneContent() {
     );
   })();
 
+  const loadCurrentItem = useCallback(async () => {
+    // Reset per-email UI so a previous email's result/preview doesn't linger
+    // when the user switches to a different message.
+    setState("loading");
+    setSenderName("");
+    setSenderEmail("");
+    setSubject("");
+    setAttachments([]);
+    setErrorMsg("");
+    setCreatedOrderId(null);
+    setCreatedEntityType(null);
+    setPreviewAtt(null);
+
+    try {
+      const item = window.Office?.context.mailbox.item;
+      if (!item) {
+        setState("ready");
+        return;
+      }
+      setSenderName(item.from.displayName);
+      setSenderEmail(item.from.emailAddress);
+      setSubject(item.subject);
+
+      const allAttachments = getAttachmentList(item);
+      const files = allAttachments.filter(
+        (a) => !a.isInline && isNotInlineSignature(a.contentType, a.name)
+      );
+
+      const withContent: AttachmentInfo[] = [];
+      for (const file of files) {
+        const content = await readAttachmentContent(item, file.id);
+        withContent.push({ ...file, content: content ?? undefined });
+      }
+      setAttachments(withContent);
+      setState("ready");
+    } catch {
+      setState("ready");
+    }
+  }, []);
+
   useEffect(() => {
     const script = document.createElement("script");
     script.src =
       "https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js";
     script.onload = () => {
-      window.Office?.onReady(async () => {
+      window.Office?.onReady(() => {
+        loadCurrentItem();
+        // Re-read the message whenever the user selects a different email
+        // while the task pane stays pinned/open.
         try {
-          const item = window.Office!.context.mailbox.item;
-          setSenderName(item.from.displayName);
-          setSenderEmail(item.from.emailAddress);
-          setSubject(item.subject);
-
-          const allAttachments = getAttachmentList(item);
-          const files = allAttachments.filter(
-            (a) => !a.isInline && isNotInlineSignature(a.contentType, a.name)
+          window.Office?.context.mailbox.addHandlerAsync(
+            window.Office.EventType.ItemChanged,
+            () => {
+              loadCurrentItem();
+            }
           );
-
-          const withContent: AttachmentInfo[] = [];
-          for (const file of files) {
-            const content = await readAttachmentContent(item, file.id);
-            withContent.push({ ...file, content: content ?? undefined });
-          }
-          setAttachments(withContent);
-          setState("ready");
         } catch {
-          setState("ready");
+          /* ItemChanged not supported on this host */
         }
       });
     };
@@ -426,7 +466,7 @@ function TaskpaneContent() {
       setState("ready");
     };
     document.head.appendChild(script);
-  }, []);
+  }, [loadCurrentItem]);
 
   const handleSend = useCallback(async () => {
     setState("sending");
