@@ -12,12 +12,15 @@ function now(): string {
 }
 
 function generateClarificationQuestions(order: Order): string[] {
+  const omitLinePrefix = order.demoFlow?.scenario === "rfq_advisory";
   const questions: string[] = [];
   for (const item of order.lineItems) {
     if (item.matchStatus !== "confirmed") {
       for (const issue of item.issues) {
         questions.push(
-          `Line ${item.lineNumber} (${item.parsedProductName}): ${issue}`
+          omitLinePrefix
+            ? issue
+            : `Line ${item.lineNumber} (${item.parsedProductName}): ${issue}`
         );
       }
     }

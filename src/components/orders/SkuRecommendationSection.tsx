@@ -37,7 +37,15 @@ const SEARCH_STEPS = [
 
 const STEP_INTERVAL_MS = 1050;
 
-function CandidateImage({ src, alt }: { src?: string; alt: string }) {
+function CandidateImage({
+  src,
+  alt,
+  fit = "cover",
+}: {
+  src?: string;
+  alt: string;
+  fit?: "cover" | "contain";
+}) {
   const [stage, setStage] = useState<0 | 1 | 2>(0);
   const sources = [src, "/products/bolts-fasteners.jpg"];
   const current = stage < 2 ? sources[stage] : undefined;
@@ -59,7 +67,10 @@ function CandidateImage({ src, alt }: { src?: string; alt: string }) {
     <img
       src={current}
       alt={alt}
-      className="h-full w-full object-cover"
+      className={cn(
+        "h-full w-full",
+        fit === "contain" ? "object-contain p-1" : "object-cover"
+      )}
       onError={() => setStage((s) => (s < 2 ? ((s + 1) as 0 | 1 | 2) : s))}
     />
   );
@@ -184,7 +195,11 @@ function CandidateCard({
 
       <div className="flex gap-3 p-4">
         <div className="h-20 w-20 shrink-0 overflow-hidden border border-border bg-muted/20">
-          <CandidateImage src={candidate.imageUrl} alt={candidate.name} />
+          <CandidateImage
+            src={candidate.imageUrl}
+            alt={candidate.name}
+            fit={rank <= 2 ? "contain" : "cover"}
+          />
         </div>
 
         <div className="min-w-0 flex-1">

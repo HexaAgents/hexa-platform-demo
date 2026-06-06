@@ -189,10 +189,7 @@ function getSectionTitle(key: SectionKey, order: Order): string {
   switch (key) {
     case "delivery": return "Delivery Confirmed";
     case "shipping": return "Shipment Tracking";
-    case "mrp": {
-      const erpScenarios = new Set(["rfq_advisory", "rfq_quick"]);
-      return erpScenarios.has(order.demoFlow?.scenario ?? "") ? "Pushed to ERP" : "Pushed to MRP";
-    }
+    case "mrp": return "Pushed to ERP";
     case "po": {
       const hasMismatch = order.demoFlow?.quoteComparison && !order.demoFlow.quoteComparison.overallMatch;
       return hasMismatch ? "PO Mismatch" : "PO Confirmed";
@@ -272,7 +269,7 @@ function getSectionSummary(key: SectionKey, order: Order): string {
     }
     case "mrp": {
       const erpId = flow?.mrpPush?.erpOrderId;
-      return erpId ? `Pushed to ERP ${erpId}` : "Order pushed to MRP/ERP system";
+      return erpId ? `Pushed to ERP ${erpId}` : "Order pushed to ERP system";
     }
     case "po": {
       const poNum = flow?.poConfirmation?.poNumber ?? flow?.poNumber ?? order.poNumber ?? "PO";

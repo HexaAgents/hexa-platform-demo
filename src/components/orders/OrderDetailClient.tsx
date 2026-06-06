@@ -30,7 +30,7 @@ const DETAIL_STAGE_CONFIG: Record<OrderStage, { label: string; dot: string }> = 
   po_received:             { label: "PO Received",             dot: "bg-blue-500" },
   po_validated:            { label: "PO Validated",            dot: "bg-emerald-500" },
   po_mismatch:             { label: "PO Mismatch",            dot: "bg-red-500" },
-  pushed_to_mrp:           { label: "Pushed to MRP",          dot: "bg-emerald-500" },
+  pushed_to_mrp:           { label: "Pushed to ERP",          dot: "bg-emerald-500" },
   shipped:                 { label: "Shipped",                 dot: "bg-emerald-500" },
   delivered:               { label: "Delivered",               dot: "bg-emerald-500" },
 };

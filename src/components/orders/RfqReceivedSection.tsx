@@ -172,11 +172,16 @@ export function RfqReceivedSection({ order, mode, demoCtx, onStageChange }: Prop
     (i) => i.matchStatus !== "confirmed"
   );
 
+  const omitLinePrefix = order.demoFlow?.scenario === "rfq_advisory";
   const detectedQuestions = useMemo(() => {
     const qs: string[] = [];
     for (const item of issueItems) {
       for (const issue of item.issues) {
-        qs.push(`Line ${item.lineNumber} (${item.parsedProductName}): ${issue}`);
+        qs.push(
+          omitLinePrefix
+            ? issue
+            : `Line ${item.lineNumber} (${item.parsedProductName}): ${issue}`
+        );
       }
     }
     if (order.parseMissingFields && order.parseMissingFields.length > 0) {
@@ -185,7 +190,7 @@ export function RfqReceivedSection({ order, mode, demoCtx, onStageChange }: Prop
       );
     }
     return qs;
-  }, [issueItems, order.parseMissingFields]);
+  }, [issueItems, order.parseMissingFields, omitLinePrefix]);
 
   const emailQuestions = useMemo(() => {
     return detectedQuestions.map((question) => {

@@ -366,7 +366,7 @@ export const mockOrders: Order[] = [
             ],
             recommendationNote:
               "The washdown environment is the biggest concern. 316 stainless resists cleaning chemicals far better than zinc-plated carbon steel and avoids premature rust that could contaminate the facility or drive maintenance — the safest long-term choice.",
-            imageUrl: "/products/sku-hcs-316.jpg",
+            imageUrl: "/products/sku-hcs-316.png",
             specs: [
               { label: "Material", value: "316 Stainless Steel" },
               { label: "Thread", value: "1/2\"-13 UNC" },
@@ -395,7 +395,7 @@ export const mockOrders: Order[] = [
             ],
             recommendationNote:
               "Perfectly acceptable for indoor industrial environments, but repeated washdowns and cleaning chemicals make 316 the stronger choice. The price difference is usually small relative to the installation cost.",
-            imageUrl: "/products/sku-hcs-188.jpg",
+            imageUrl: "/products/sku-hcs-188.png",
             specs: [
               { label: "Material", value: "18-8 Stainless Steel" },
               { label: "Thread", value: "1/2\"-13 UNC" },
@@ -424,7 +424,7 @@ export const mockOrders: Order[] = [
             ],
             recommendationNote:
               "Zinc plating will eventually deteriorate in a wet washdown environment. Many contractors would use it for dry warehouse applications, but food processing facilities typically justify moving up to stainless.",
-            imageUrl: "/products/sku-hcs-zinc.jpg",
+            imageUrl: "/products/sku-hcs-zinc.png",
             specs: [
               { label: "Material", value: "Grade 5 Carbon Steel" },
               { label: "Thread", value: "1/2\"-13 UNC" },
